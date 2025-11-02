@@ -1,0 +1,13 @@
+{
+"name": "Selrahcd-marketplace",
+"owner": {
+"name": "SelrahcD"
+},
+"plugins": [
+{
+  "name": "dot-claude",
+  "source": "./dot-claude",
+  "description": "My Claude skills and commands"
+}
+]
+}
