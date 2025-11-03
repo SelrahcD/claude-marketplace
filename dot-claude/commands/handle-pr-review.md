@@ -6,5 +6,5 @@ For each one of them:
 - make the necessary changes
 - create a new commit
 - push it
-- Reply to the comment with a link to the commit. Start the comment with "🤖 [Claude Code] :"
+- Reply to the comment with a link to the commit in the conversation. Start the comment with "🤖 [Claude Code] :"
 - update your todo list
