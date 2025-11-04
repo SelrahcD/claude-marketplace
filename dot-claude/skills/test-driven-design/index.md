@@ -30,7 +30,8 @@ NEVER WRITE IMPLEMENTATION CODE BEFORE ITS TEST
 
 ### Phase 0: TEST LIST (Before RED)
 
-**Always start by creating a test list using ZOMBIES ordering:**
+**Always start by creating a test list by splitting the problem in smaller problems and then using ZOMBIES ordering:**
+
 
 ```markdown
 ## Test List: Shopping Cart
@@ -44,6 +45,8 @@ NEVER WRITE IMPLEMENTATION CODE BEFORE ITS TEST
 ```
 
 **Test list rules:**
+- Split the problem in smaller problems
+  - N something -> do one something after the other
 - Create upfront (incomplete is OK, you'll add more)
 - Use ZOMBIES ordering (see below)
 - Keep in sync - cross off when passing
