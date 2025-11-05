@@ -1,5 +1,5 @@
 ---
-name: clean-test-file
+name: selrahcd:clean-test-file
 description: Refactor test files to improve readability, reduce duplication, and organize tests logically
 ---
 

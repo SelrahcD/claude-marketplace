@@ -1,3 +1,8 @@
+---
+name: selrahcd:handle-pr-review
+description: Fetch unresolved comments on Github PR and fix them
+---
+
 I've added comments on the PR, globally and on files.
 Fetch the unresolved ones and add them to you todo list. Comments marked with a rocket are already handled.
 I want you to handle them one by one.
