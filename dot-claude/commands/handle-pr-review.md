@@ -13,3 +13,17 @@ For each one of them:
 - push it
 - Reply to the comment with a link to the commit in the conversation. Start the comment with "🤖 [Claude Code] :"
 - update your todo list
+
+
+## Reply to comment
+
+Use the following github cli command to reply to a comment.
+
+```
+gh api \
+  --method POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  /repos/OWNER/REPO/pulls/PULL_NUMBER/comments/COMMENT_ID/replies \
+  -f body='Your reply text here'
+ ```
