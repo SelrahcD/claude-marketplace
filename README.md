@@ -48,9 +48,12 @@ A comprehensive Test-Driven Development guide enforcing the RED-GREEN-REFACTOR c
 This marketplace plugin integrates with Claude Code. To install:
 
 1. Ensure you have Claude Code installed
-2. Follow the [Claude Code plugin installation guide](https://docs.claude.com/en/docs/claude-code/plugins)
-3. Add this repository's marketplace plugin to your Claude Code configuration
-4. Commands and skills will be available immediately in your Claude Code sessions
+2. Add this repository's marketplace plugin to your Claude Code configuration, `/plugin marketplace add SelrahcD/claude-marketplace`
+
+
+### Install dot-claude plugin
+
+Install plugin, `/plugin install dot-claude@Selrahcd-marketplace `
 
 For detailed installation instructions, refer to the [Claude Code Plugins Documentation](https://docs.claude.com/en/docs/claude-code/plugins).
 
