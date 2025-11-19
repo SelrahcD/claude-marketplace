@@ -111,3 +111,7 @@ This is a personal marketplace plugin, but feel free to reference it or adapt it
 ## Support
 
 For issues or questions about Claude Code and plugins, refer to the [Claude Code documentation](https://docs.claude.com/en/docs/claude-code/).
+
+## Credits
+
+The BugMagnet command is from [Gojko Adzic](https://github.com/gojko/bugmagnet-ai-assistant/)
