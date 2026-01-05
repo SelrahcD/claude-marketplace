@@ -6,7 +6,7 @@
 "plugins": [
 {
   "name": "dot-claude",
-  "source": "./dot-claude",
+  "source": "./selrahcd-dot-claude",
   "description": "My Claude skills and commands"
 }
 ]
