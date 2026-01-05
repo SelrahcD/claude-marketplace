@@ -45,7 +45,7 @@ esac
 case "$(uname -s)" in
   Darwin*)
     # macOS - use terminal-notifier
-    terminal-notifier -title "Claude Code" -message "$message" -sound default
+    terminal-notifier -title "Claude Code" -message "$message" -sender claudecode.notifications -sound default
     ;;
 
   Linux*)
