@@ -1,0 +1,8 @@
+{
+  "name": "selrahcd-notifications",
+  "description": "System notifications for Claude Code events",
+  "version": "1.0.0",
+  "author": {
+    "name": "Selrahcd"
+  }
+}

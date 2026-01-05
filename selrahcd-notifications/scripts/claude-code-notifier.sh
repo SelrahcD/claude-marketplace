@@ -47,7 +47,7 @@ case "$(uname -s)" in
     # macOS - use terminal-notifier
     terminal-notifier -title "Claude Code" -message "$message" -sound default
     ;;
-    
+
   Linux*)
     # Linux - use notify-send
     if command -v notify-send >/dev/null 2>&1; then
@@ -57,7 +57,7 @@ case "$(uname -s)" in
       echo "Claude Code: $message"
     fi
     ;;
-    
+
   CYGWIN*|MINGW*|MSYS*)
     # Windows - use PowerShell toast notification
     powershell.exe -Command "
@@ -78,7 +78,7 @@ case "$(uname -s)" in
     \$toast = [Windows.UI.Notifications.ToastNotification]::new(\$xml);
     [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Claude Code').Show(\$toast);"
     ;;
-    
+
   *)
     # Fallback - just echo to terminal
     echo "Claude Code Notification: $message"

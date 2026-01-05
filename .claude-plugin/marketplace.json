@@ -7,7 +7,12 @@
 {
   "name": "dot-claude",
   "source": "./selrahcd-dot-claude",
-  "description": "My Claude skills and commands"
+  "description": "Claude skills and commands for PR management, test improvements, and TDD workflows"
+},
+{
+  "name": "notifications",
+  "source": "./selrahcd-notifications",
+  "description": "System notifications for Claude Code events (SessionStart, SessionEnd, Stop, Notification)"
 }
 ]
 }
