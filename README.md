@@ -13,6 +13,10 @@ This is a Claude AI marketplace plugin that packages developer productivity tool
 
 ## Features
 
+### Notification
+
+Display notifications when attention is required.
+
 ### Commands
 
 #### `/selrahcd-dot-claude:create-pr`
@@ -115,3 +119,4 @@ For issues or questions about Claude Code and plugins, refer to the [Claude Code
 ## Credits
 
 The BugMagnet command is from [Gojko Adzic](https://github.com/gojko/bugmagnet-ai-assistant/)
+[Notifier](https://github.com/hta218/claude-code-notifier)
