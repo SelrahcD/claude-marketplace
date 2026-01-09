@@ -24,8 +24,25 @@ fi
 #==============================================================================
 case "$(uname -s)" in
   Darwin*)
-    # macOS - use terminal-notifier
-    terminal-notifier -title "Claude Code" -message "$message" -sender claudecode.notifications -sound default
+    # macOS - check if we're in the focused terminal window/tab
+    should_notify=true
+    frontmost=$(osascript -e 'tell application "System Events" to get name of first application process whose frontmost is true' 2>/dev/null)
+
+    # Only check window title if a terminal is frontmost
+    case "$frontmost" in
+      ghostty|Ghostty|Terminal|iTerm2|iTerm|Alacritty|kitty|WezTerm|Hyper|Warp)
+        # Get the front window's title and check if it looks like a Claude session
+        front_window=$(osascript -e "tell application \"System Events\" to tell process \"$frontmost\" to get name of front window" 2>/dev/null)
+        # Claude Code titles start with status indicators like ✳ or ◍
+        if echo "$front_window" | grep -qE "^[✳◍●○]"; then
+          should_notify=false
+        fi
+        ;;
+    esac
+
+    if [ "$should_notify" = true ]; then
+      terminal-notifier -title "Claude Code" -message "$message" -sender claudecode.notifications -sound default
+    fi
     ;;
 
   Linux*)
