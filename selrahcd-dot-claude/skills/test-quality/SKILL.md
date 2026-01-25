@@ -2,6 +2,9 @@
 name: test-quality
 description: Validates that tests are well-written following best practices. Checks structure, setup patterns, dependencies, naming, and detects anti-patterns. Can run as an agent to review and improve test code.
 runAsAgent: true
+commands:
+  - improve-test
+  - test-quality
 ---
 
 # Test Quality Validator
