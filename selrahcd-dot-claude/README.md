@@ -39,6 +39,14 @@ A comprehensive Test-Driven Development guide enforcing the RED-GREEN-REFACTOR c
 - Integrates with `tdd-guard` for continuous verification
 - Documents common pitfalls and best practices
 
+#### `adr`
+Manage Architecture Decision Records (ADRs) for documenting technical decisions:
+- `/adr new <title>` - Create a new ADR
+- `/adr list` - List all existing ADRs
+- `/adr show <number>` - Display a specific ADR
+- `/adr supersede <number> <new-title>` - Create a new ADR that supersedes an existing one
+- `/adr deprecate <number>` - Mark an ADR as deprecated
+
 ## Installation
 
 1. Add the marketplace to your Claude Code configuration:
