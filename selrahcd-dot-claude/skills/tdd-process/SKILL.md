@@ -200,7 +200,14 @@ Test IS failing. Addressing what the error message demands...
         10. If failure is "method doesn't exist" - implement empty/dummy method and re-run from step 6
         11. Repeat until you get a "meaningful" failure
         12. Improve the code to produce a more explicit error message. Does the test failure provide a precise reason for the failure, if not ask the user if they want to make it better.
-        13. Transition to RED
+        13. Run quick test quality checks:
+            - Can you understand the test without reading implementation?
+            - Are asserted values visible in the test setup?
+            - Is there only one reason this test would fail?
+            - Does the test name describe a behavior?
+            - Would the test break if implementation changes but behavior doesn't?
+        14. If any check fails, fix the test before proceeding
+        15. Transition to RED
       </actions>
 
       <post_conditions>
@@ -209,6 +216,7 @@ Test IS failing. Addressing what the error message demands...
         ✓ Failure message shown to user verbatim
         ✓ Failure reason justified (proves test is correct)
         ✓ Failure is "meaningful" (not setup/syntax error)
+        ✓ Quick quality checks passed (5 checks)
       </post_conditions>
 
       <validation_before_transition>
@@ -219,6 +227,12 @@ Test IS failing. Addressing what the error message demands...
         ✓ Test failed correctly: [yes]
         ✓ Failure message shown: [yes - output above]
         ✓ Meaningful failure: [yes - justification]
+        ✓ Quick quality checks:
+          - Understandable without implementation: [yes/no]
+          - Asserted values visible in setup: [yes/no]
+          - Single reason to fail: [yes/no]
+          - Test name describes behavior: [yes/no]
+          - Won't break on implementation change: [yes/no]
 
         Transitioning to RED - test is now failing for the right reason."
       </validation_before_transition>
@@ -451,8 +465,11 @@ Test IS failing. Addressing what the error message demands...
         4. Capture and show output
         5. Run build
         6. Capture and show output
-        7. If ALL pass → Transition to COMPLETE
-        8. If ANY fail → Transition to BLOCKED or RED
+        7. Run test-quality agent on newly created test file(s)
+        8. Review findings and fix any critical issues
+        9. If fixes made, re-run tests to ensure still passing
+        10. If ALL pass → Transition to COMPLETE
+        11. If ANY fail → Transition to BLOCKED or RED
       </actions>
 
       <post_conditions>
@@ -465,6 +482,8 @@ Test IS failing. Addressing what the error message demands...
         ✓ Build executed
         ✓ Build SUCCEEDED
         ✓ Build output shown
+        ✓ Test quality validation executed
+        ✓ Critical quality issues addressed
       </post_conditions>
 
       <validation_before_completion>
@@ -473,6 +492,7 @@ Test IS failing. Addressing what the error message demands...
         ✓ Full test suite: [X/X tests passed - output shown]
         ✓ Lint: [passed - output shown]
         ✓ Build: [succeeded - output shown]
+        ✓ Test quality: [agent run - findings addressed]
 
         All validation passed. TDD cycle COMPLETE for this test.
 
