@@ -12,7 +12,7 @@ Commands and skills for PR management, test improvements, and test-driven develo
 - `/create-pr` - Streamlined pull request creation
 - `/handle-pr-review` - Automated PR review handling
 - `/improve-test` - Test file quality improvements
-- `test-driven-development` skill for TDD workflows
+- `tdd-process` skill for strict TDD state machine workflows
 
 ## Installation
 
@@ -47,6 +47,10 @@ See each plugin's README for detailed setup and usage instructions.
 
 - Claude Code (latest version)
 - See individual plugin READMEs for plugin-specific requirements
+
+## Credits
+
+- `tdd-process` skill: Based on [Nick Tune's claude-skillz](https://github.com/NTCoding/claude-skillz)
 
 ## Support
 
