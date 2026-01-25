@@ -81,3 +81,7 @@ Manage Architecture Decision Records (ADRs) for documenting technical decisions:
 ## Credits
 
 - BugMagnet command: [Gojko Adzic](https://github.com/gojko/bugmagnet-ai-assistant/)
+- TDD Process skill: [Nick Tune (NTCoding)](https://github.com/NTCoding)
+- Claude Code Optimizer skill: [Nick Tune (NTCoding)](https://github.com/NTCoding)
+- Using Git Worktrees skill: [Jesse Vincent](https://github.com/obra/superpowers/)
+- Brainstorming skill: [Jesse Vincent](https://github.com/obra/superpowers/)

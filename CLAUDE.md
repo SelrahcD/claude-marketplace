@@ -16,3 +16,7 @@ When making changes to plugins (commands, skills, or plugin configuration), alwa
 When modifying any file in `dot-claude/`:
 - `dot-claude/.claude-plugin/plugin.json` - Update `version`
 - `.claude-plugin/marketplace.json` - Update `version` (add if missing)
+
+## Credits
+
+When adding skills or commands based on external work, add credits to the plugin's README.md file in the Credits section. Format: `- <Skill/Command name>: [Author Name](link)`
