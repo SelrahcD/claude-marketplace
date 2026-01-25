@@ -1,7 +1,7 @@
 ---
 name: TDD Process
 description: "Strict test-driven development state machine with red-green-refactor cycles. Enforces test-first development, meaningful failures, minimum implementations, and full verification. Activates when user requests: 'use a TDD approach', 'start TDD', 'test-drive this'."
-version: 1.0.0
+version: 1.1.0
 ---
 
 **In Plan Mode: Plans should be test specifications, not implementation designs. Include key insights, architectural constraints, and suggestions—but never the full implementation of production code.**
@@ -12,10 +12,11 @@ version: 1.0.0
 
 Format:
 ```
+📝 TDD: TEST-LIST CREATION
+⚪ TDD: TEST SETUP
 🔴 TDD: RED
 🟢 TDD: GREEN
 🔵 TDD: REFACTOR
-⚪ TDD: PLANNING
 🟡 TDD: VERIFY
 ⚠️ TDD: BLOCKED
 ```
@@ -29,13 +30,19 @@ When you ask a question → prefix with TDD state
 
 Example:
 ```
-⚪ TDD: PLANNING
+📝 TDD: TEST-LIST CREATION
+Generating test list for price validation feature...
+
+📝 TDD: TEST-LIST CREATION
+Test list created. Moving to first test.
+
+⚪ TDD: TEST SETUP
 Writing test for negative price validation...
 
-⚪ TDD: PLANNING
+⚪ TDD: TEST SETUP
 Running npm test to see it fail...
 
-⚪ TDD: PLANNING
+⚪ TDD: TEST SETUP
 Test output shows: Expected CannotHaveNegativePrice error but received -50
 Test fails correctly. Transitioning to RED.
 
@@ -66,29 +73,37 @@ Test IS failing. Addressing what the error message demands...
 ```
                   user request
                        ↓
-                 ┌──────────┐
-            ┌────│ PLANNING │────┐
-            │    └─────┬────┘    │
-            │          │         │
-            │  test fails        │
-            │  correctly         │
-  unclear   │          ↓         │ blocker
-            │    ┌──────────┐    │
-            └────│   RED    │    │
-                 │          │    │
-                 │ Test IS  │    │
-                 │ failing  │    │
-                 └────┬─────┘    │
-                      │          │
-              test    │          │
-              passes  │          │
-                      ↓          │
-                 ┌──────────┐    │
-                 │  GREEN   │    │
-                 │          │    │
-                 │ Test IS  │    │
-                 │ passing  │    │
-                 └────┬─────┘────┘
+            ┌─────────────────────┐
+            │  TEST-LIST CREATION │
+            │                     │
+            │ Generate ordered    │
+            │ test list           │
+            └──────────┬──────────┘
+                       │
+                       ↓
+                 ┌────────────┐
+            ┌────│ TEST SETUP │────┐
+            │    └─────┬──────┘    │
+            │          │           │
+            │  test fails          │
+            │  correctly           │
+  unclear   │          ↓           │ blocker
+            │    ┌──────────┐      │
+            └────│   RED    │      │
+                 │          │      │
+                 │ Test IS  │      │
+                 │ failing  │      │
+                 └────┬─────┘      │
+                      │            │
+              test    │            │
+              passes  │            │
+                      ↓            │
+                 ┌──────────┐      │
+                 │  GREEN   │      │
+                 │          │      │
+                 │ Test IS  │      │
+                 │ passing  │      │
+                 └────┬─────┘──────┘
                       │
           refactoring │
           needed      │
@@ -120,13 +135,56 @@ Test IS failing. Addressing what the error message demands...
   </diagram>
 
   <states>
-    <state name="PLANNING">
-      <prefix>⚪ TDD: PLANNING</prefix>
-      <purpose>Writing a failing test to prove requirement</purpose>
+    <state name="TEST-LIST CREATION">
+      <prefix>📝 TDD: TEST-LIST CREATION</prefix>
+      <purpose>Generate an ordered list of tests to guide TDD implementation</purpose>
 
       <pre_conditions>
         ✓ User has provided a task/requirement/bug report
         ✓ No other TDD cycle in progress
+      </pre_conditions>
+
+      <actions>
+        1. Analyze the requirement/feature/bug report
+        2. Use the test-list-planner agent to generate an ordered test list
+        3. Present the test list to the user
+        4. Explain that:
+           - The list is ordered from simplest to most complex (ZOMBIES + TPP)
+           - Additional tests may be discovered during implementation
+           - The order can be adjusted if it makes implementation harder
+           - This is a guide, not a strict contract
+        5. Transition to TEST SETUP with the first test from the list
+      </actions>
+
+      <post_conditions>
+        ✓ Test list generated and shared
+        ✓ User understands the list is flexible (order can change, tests can be added)
+        ✓ First test identified to implement
+      </post_conditions>
+
+      <validation_before_transition>
+        BEFORE transitioning to TEST SETUP, announce:
+        "Pre-transition validation:
+        ✓ Test list generated: [yes]
+        ✓ List shared with user: [yes]
+        ✓ First test identified: [test name]
+
+        Transitioning to TEST SETUP - implementing first test from list."
+      </validation_before_transition>
+
+      <transitions>
+        - TEST-LIST CREATION → TEST SETUP (when test list is ready)
+        - TEST-LIST CREATION → BLOCKED (when requirements are too unclear to generate list)
+      </transitions>
+    </state>
+
+    <state name="TEST SETUP">
+      <prefix>⚪ TDD: TEST SETUP</prefix>
+      <purpose>Writing a failing test to prove requirement</purpose>
+
+      <pre_conditions>
+        ✓ Test list exists (from TEST-LIST CREATION)
+        ✓ Current test to implement is identified
       </pre_conditions>
 
       <actions>
@@ -166,8 +224,8 @@ Test IS failing. Addressing what the error message demands...
       </validation_before_transition>
 
       <transitions>
-        - PLANNING → RED (when test fails correctly - red milestone achieved)
-        - PLANNING → BLOCKED (when cannot write valid test)
+        - TEST SETUP → RED (when test fails correctly - red milestone achieved)
+        - TEST SETUP → BLOCKED (when cannot write valid test)
       </transitions>
     </state>
 
@@ -185,7 +243,7 @@ Test IS failing. Addressing what the error message demands...
       6. Shown all success outputs to the user
 
       <pre_conditions>
-        ✓ Test written and executed (from PLANNING)
+        ✓ Test written and executed (from TEST SETUP)
         ✓ Test IS FAILING correctly (red bar visible)
         ✓ Failure message shown and justified
         ✓ Failure is "meaningful" (not setup/syntax error)
@@ -251,7 +309,7 @@ Test IS failing. Addressing what the error message demands...
       <transitions>
         - RED → GREEN (when test PASSES, code COMPILES, code LINTS - green milestone achieved)
         - RED → BLOCKED (when cannot make test pass or resolve compile/lint errors)
-        - RED → PLANNING (when test failure reveals requirement was misunderstood)
+        - RED → TEST SETUP (when test failure reveals requirement was misunderstood)
       </transitions>
     </state>
 
@@ -416,13 +474,19 @@ Test IS failing. Addressing what the error message demands...
         ✓ Lint: [passed - output shown]
         ✓ Build: [succeeded - output shown]
 
-        All validation passed. TDD cycle COMPLETE.
+        All validation passed. TDD cycle COMPLETE for this test.
 
-        Session Summary:
+        Check test list:
+        - Remaining tests: [list remaining tests from test list]
+        - Tests added during implementation: [any new tests discovered]
+
+        If more tests remain → Transition to TEST SETUP for next test.
+        If all tests complete → Session complete.
+
+        Session Summary (when all tests done):
         - Tests written: [count]
         - Refactorings: [count]
         - Violations: [count]
-        - Duration: [time]
 
         Next: Check if project defines a task workflow. If so, follow it to completion."
 
@@ -443,7 +507,8 @@ Test IS failing. Addressing what the error message demands...
       </critical_rules>
 
       <transitions>
-        - VERIFY → COMPLETE (when all checks pass)
+        - VERIFY → TEST SETUP (when all checks pass AND more tests remain in list)
+        - VERIFY → COMPLETE (when all checks pass AND all tests from list implemented)
         - VERIFY → RED (when tests fail - regression detected)
         - VERIFY → REFACTOR (when lint fails - code quality issue)
         - VERIFY → BLOCKED (when build fails - structural issue)
@@ -533,7 +598,7 @@ Test IS failing. Addressing what the error message demands...
   </rule>
 
   <rule id="2" title="Show and justify failure before RED">
-    In PLANNING: run test, show exact failure message, explain why it's the RIGHT failure.
+    In TEST SETUP: run test, show exact failure message, explain why it's the RIGHT failure.
     "Database migration failed" = setup issue, not meaningful failure.
   </rule>
 
