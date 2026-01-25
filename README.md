@@ -56,6 +56,11 @@ Refactors test files to improve quality:
 - Logically groups related tests
 - Supports TypeScript/JavaScript, Python, Java, and C#
 
+#### Agents
+
+##### `commit-assistant`
+Automated git commit helper that analyzes staged changes and generates meaningful commit messages following conventional commit standards. Invoked automatically after completing code changes or when the user requests a commit.
+
 #### Skills
 
 ##### `test-driven-development`
@@ -157,6 +162,8 @@ Type any command to execute it within your Claude Code session.
 └── selrahcd-dot-claude/                # Dot-Claude plugin
     ├── .claude-plugin/
     │   └── plugin.json                 # Plugin metadata
+    ├── agents/                         # Specialized agent definitions
+    │   └── commit-assistant.md
     ├── commands/                       # Slash command definitions
     │   ├── create-pr.md
     │   ├── handle-pr-review.md
@@ -164,10 +171,9 @@ Type any command to execute it within your Claude Code session.
     │   └── bugmagnet.md
     ├── hooks/
     │   └── hooks.json                  # Hook configuration
-    ├── skills/                         # Reusable skill implementations
-    │   └── test-driven-development/
-    │       └── SKILL.md
-    └── claude-code-notifier.sh         # Legacy notification script (deprecated)
+    └── skills/                         # Reusable skill implementations
+        └── test-driven-development/
+            └── SKILL.md
 ```
 
 ## Requirements
