@@ -1,18 +1,23 @@
 {
-"name": "Selrahcd-marketplace",
-"owner": {
-"name": "SelrahcD"
-},
-"plugins": [
-{
-  "name": "dot-claude",
-  "source": "./selrahcd-dot-claude",
-  "description": "Claude skills and commands for PR management, test improvements, and TDD workflows"
-},
-{
-  "name": "notifications",
-  "source": "./selrahcd-notifications",
-  "description": "System notifications for Claude Code events (SessionStart, SessionEnd, Stop, Notification)"
-}
-]
+  "name": "selrahcd-marketplace",
+  "owner": {
+    "name": "SelrahcD"
+  },
+  "metadata": {
+    "description": "A collection of Claude Code plugins for development workflows"
+  },
+  "plugins": [
+    {
+      "name": "dot-claude",
+      "source": "./selrahcd-dot-claude",
+      "description": "Claude skills and commands for PR management, test improvements, TDD workflows, and design processes",
+      "version": "1.18.0"
+    },
+    {
+      "name": "notifications",
+      "source": "./selrahcd-notifications",
+      "description": "System notifications for Claude Code events (SessionStart, SessionEnd, Stop, Notification)",
+      "version": "1.0.0"
+    }
+  ]
 }

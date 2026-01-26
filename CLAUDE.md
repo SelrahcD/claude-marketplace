@@ -27,11 +27,15 @@ Only include component paths (commands, agents, skills, hooks, mcpServers, lspSe
 
 ## Version Management
 
-When making changes to a plugin (commands, skills, or plugin configuration), update the version in that plugin's `.claude-plugin/plugin.json` following semantic versioning:
+When making changes to a plugin (commands, skills, or plugin configuration), update the version following semantic versioning:
 
 - Patch (x.x.X): Bug fixes, documentation updates, minor improvements
 - Minor (x.X.0): New commands, new skills, new features
 - Major (X.0.0): Breaking changes, major restructuring
+
+**Always keep versions in sync between:**
+1. The plugin's `.claude-plugin/plugin.json` (`version` field)
+2. The marketplace's `.claude-plugin/marketplace.json` (plugin entry `version` field)
 
 ## Credits
 
