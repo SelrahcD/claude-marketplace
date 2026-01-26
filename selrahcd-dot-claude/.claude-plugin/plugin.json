@@ -1,8 +1,16 @@
 {
   "name": "selrahcd-dot-claude",
-  "description": "Selrahcd's Claude skills and commands",
   "version": "1.18.0",
+  "description": "Selrahcd's Claude skills and commands for PR management, test improvements, TDD workflows, and design processes",
   "author": {
-    "name": "Selrahcd"
-  }
+    "name": "Selrahcd",
+    "url": "https://github.com/SelrahcD"
+  },
+  "repository": "https://github.com/SelrahcD/claude-marketplace",
+  "license": "MIT",
+  "keywords": ["tdd", "testing", "git", "pr", "design", "workflow"],
+  "commands": "./commands/",
+  "agents": "./agents/",
+  "skills": "./skills/",
+  "hooks": "./hooks/"
 }

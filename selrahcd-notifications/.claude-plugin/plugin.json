@@ -1,8 +1,13 @@
 {
   "name": "selrahcd-notifications",
-  "description": "System notifications for Claude Code events",
   "version": "1.0.0",
+  "description": "System notifications for Claude Code events (SessionStart, SessionEnd, Stop, Notification)",
   "author": {
-    "name": "Selrahcd"
-  }
+    "name": "Selrahcd",
+    "url": "https://github.com/SelrahcD"
+  },
+  "repository": "https://github.com/SelrahcD/claude-marketplace",
+  "license": "MIT",
+  "keywords": ["notifications", "macos", "events"],
+  "hooks": "./hooks/"
 }
