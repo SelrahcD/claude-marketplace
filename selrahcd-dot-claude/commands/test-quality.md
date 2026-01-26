@@ -1,3 +1,8 @@
+---
+name: test-quality
+description: Validate test files against best practices and propose improvements
+---
+
 # Test Quality - Validate Test Files
 
 Validate test files against best practices and propose improvements.

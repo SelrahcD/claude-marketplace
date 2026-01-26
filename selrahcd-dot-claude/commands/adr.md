@@ -1,3 +1,8 @@
+---
+name: adr
+description: Manage Architecture Decision Records for documenting technical decisions
+---
+
 # ADR - Architecture Decision Records
 
 Manage Architecture Decision Records for documenting technical decisions.

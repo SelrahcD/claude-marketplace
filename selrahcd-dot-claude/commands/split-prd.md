@@ -1,3 +1,8 @@
+---
+name: split-prd
+description: Transform technical PRD features into usable user stories
+---
+
 # Split PRD - Transform PRD Features into User Stories
 
 Transform technical PRD features into usable user stories.

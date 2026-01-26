@@ -1,3 +1,8 @@
+---
+name: worktree
+description: Create isolated git worktrees for feature work
+---
+
 # Worktree - Git Worktree Management
 
 Create isolated git worktrees for feature work.

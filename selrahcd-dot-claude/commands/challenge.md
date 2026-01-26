@@ -1,3 +1,8 @@
+---
+name: challenge
+description: Challenge plans, designs, or artifacts with rigorous review
+---
+
 # Challenge - Paranoid Plan Review
 
 Challenge plans, designs, or artifacts with rigorous review.

@@ -1,3 +1,8 @@
+---
+name: brainstorm
+description: Explore user intent, requirements, and design before any creative work
+---
+
 # Brainstorm - Explore Requirements Before Implementation
 
 Explore user intent, requirements, and design before any creative work.

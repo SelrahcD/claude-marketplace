@@ -1,3 +1,8 @@
+---
+name: bugmagnet
+description: Execute systematic test coverage analysis and bug discovery for a code module
+---
+
 # BugMagnet - Comprehensive Test Coverage and Bug Discovery Workflow
 
 Execute systematic test coverage analysis and implementation for a code module to discover edge cases and potential bugs.

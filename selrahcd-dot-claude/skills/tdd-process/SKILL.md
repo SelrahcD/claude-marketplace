@@ -1,7 +1,6 @@
 ---
 name: TDD Process
 description: "Strict test-driven development state machine with red-green-refactor cycles. Enforces test-first development, meaningful failures, minimum implementations, and full verification. Activates when user requests: 'use a TDD approach', 'start TDD', 'test-drive this'."
-version: 1.1.0
 ---
 
 **In Plan Mode: Plans should be test specifications, not implementation designs. Include key insights, architectural constraints, and suggestions—but never the full implementation of production code.**
