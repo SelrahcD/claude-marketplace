@@ -1,6 +1,6 @@
 {
   "name": "selrahcd-dot-claude",
-  "version": "1.18.0",
+  "version": "1.19.0",
   "description": "Selrahcd's Claude skills and commands for PR management, test improvements, TDD workflows, and design processes",
   "author": {
     "name": "Selrahcd",
