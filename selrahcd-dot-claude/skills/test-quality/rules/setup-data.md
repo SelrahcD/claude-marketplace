@@ -6,6 +6,8 @@ Good test data management avoids repetition and makes tests readable.
 
 Use factories or builders to create test objects. This avoids repetition and makes tests maintainable.
 
+**Naming Convention:** Name factory functions `aSomething` (e.g., `aMember`, `aProduct`, `anOrder`). This makes tests read like stories, improving readability and comprehension.
+
 ```typescript
 // ❌ Bad: Repetitive inline object creation
 test('order with premium member gets free shipping', () => {
@@ -32,8 +34,8 @@ test('order with standard member pays shipping', () => {
   // ...
 });
 
-// ✅ Good: Factory with defaults
-function createMember(overrides: Partial<Member> = {}): Member {
+// ✅ Good: Factory with "aSomething" naming - reads like a story
+function aMember(overrides: Partial<Member> = {}): Member {
   return {
     id: randomId(),
     name: randomName(),
@@ -46,7 +48,8 @@ function createMember(overrides: Partial<Member> = {}): Member {
 }
 
 test('order with premium member gets free shipping', () => {
-  const member = createMember({ membershipType: 'premium' });
+  const member = aMember({ membershipType: 'premium' });
+  // Reads as: "a member with premium membership"
   // ...
 });
 ```
@@ -57,19 +60,19 @@ test('order with premium member gets free shipping', () => {
 
 ```typescript
 // ❌ Bad: Price hidden in factory, assertion uses magic number
-function createProduct() {
+function aProduct() {
   return { id: randomId(), name: 'Widget', price: 50 };
 }
 
 test('cart total equals product price', () => {
-  const cart = createEmptyCart();
-  cart.add(createProduct());
+  const cart = anEmptyCart();
+  cart.add(aProduct());
 
   expect(cart.total()).toBe(50); // Where does 50 come from?
 });
 
 // ✅ Good: Relevant value visible in test
-function createProduct(overrides: Partial<Product> = {}) {
+function aProduct(overrides: Partial<Product> = {}) {
   return {
     id: randomId(),
     name: randomName(),
@@ -80,9 +83,9 @@ function createProduct(overrides: Partial<Product> = {}) {
 
 test('cart total equals product price', () => {
   const price = 50;
-  const cart = createEmptyCart();
+  const cart = anEmptyCart();
 
-  cart.add(createProduct({ price }));
+  cart.add(aProduct({ price }));
 
   expect(cart.total()).toBe(price);
 });
@@ -98,7 +101,7 @@ Data that doesn't affect the assertion should be randomized. This:
 
 ```typescript
 // ✅ Good: Only price matters, rest is random
-function createProduct(overrides: Partial<Product> = {}) {
+function aProduct(overrides: Partial<Product> = {}) {
   return {
     id: randomId(), // Irrelevant - randomize
     name: randomString(), // Irrelevant - randomize
@@ -112,7 +115,7 @@ test('discount applies percentage to price', () => {
   const originalPrice = 100;
   const discountPercent = 20;
 
-  const product = createProduct({ price: originalPrice });
+  const product = aProduct({ price: originalPrice });
   const discounted = applyDiscount(product, discountPercent);
 
   expect(discounted.price).toBe(80); // 100 - 20%
@@ -121,11 +124,11 @@ test('discount applies percentage to price', () => {
 
 ## Builder Pattern for Complex Objects
 
-For objects with many optional fields, use a builder pattern:
+For objects with many optional fields, use a builder pattern. Name builders `anX` to maintain story-like readability:
 
 ```typescript
-// ✅ Good: Builder for complex objects
-const orderBuilder = () => ({
+// ✅ Good: Builder for complex objects with "anX" naming
+const anOrder = () => ({
   _data: {
     id: randomId(),
     customerId: randomId(),
@@ -155,7 +158,8 @@ const orderBuilder = () => ({
 });
 
 test('shipped order cannot be cancelled', () => {
-  const order = orderBuilder().withStatus('shipped').build();
+  // Reads as: "an order with status shipped"
+  const order = anOrder().withStatus('shipped').build();
 
   expect(() => order.cancel()).toThrow('Cannot cancel shipped order');
 });
@@ -164,6 +168,7 @@ test('shipped order cannot be cancelled', () => {
 ## Checklist
 
 - [ ] Using factories or builders for object creation
+- [ ] Factory/builder functions named `aSomething` (e.g., `aMember`, `aProduct`, `anOrder`)
 - [ ] No repetitive inline object literals
 - [ ] All asserted values visible in arrange/act phase
 - [ ] No magic numbers or strings in assertions

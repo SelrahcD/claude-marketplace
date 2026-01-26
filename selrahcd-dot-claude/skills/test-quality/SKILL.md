@@ -104,17 +104,31 @@ Task tool with:
 
 Collect all agent reports and compile into a single summary.
 
-### Step 4: Propose Improvements
+### Step 4: Present Improvements One by One
 
-For each violation found by agents, provide:
+For each violation found by agents, present them **one at a time** to the user.
 
-1. **What's wrong** - Specific issue found
-2. **Why it matters** - Impact on test quality
-3. **How to fix** - Concrete code suggestion
+**For each improvement:**
 
-### Step 5: Apply Fixes (if requested)
+1. Show the issue:
+   - **What's wrong** - Specific issue found
+   - **Why it matters** - Impact on test quality
+   - **How to fix** - Concrete code suggestion with before/after code
 
-If user approves, apply the suggested improvements using Edit tool.
+2. Ask user to approve or skip this specific improvement
+
+3. If approved, apply the fix using Edit tool
+
+4. Move to the next improvement
+
+**Important:** Do NOT present all improvements at once. Walk through them one by one, getting user approval for each before proceeding to the next.
+
+### Step 5: Summary
+
+After all improvements have been reviewed, provide a summary of:
+- How many improvements were applied
+- How many were skipped
+- Remaining issues (if any)
 
 ## Output Format
 
@@ -139,9 +153,17 @@ If user approves, apply the suggested improvements using Edit tool.
 
 [... other categories ...]
 
-### Recommended Fixes
+---
 
-#### 1. [Test name]: [Issue]
+## Improvement 1 of N: [Test name] - [Issue]
+
+**Category:** [category name]
+
+**What's wrong:**
+[description]
+
+**Why it matters:**
+[impact]
 
 **Current:**
 
@@ -155,10 +177,10 @@ If user approves, apply the suggested improvements using Edit tool.
 [improved code]
 ```
 
----
-
-Apply these fixes? (yes/no/select)
+Apply this fix? (yes/skip)
 ```
+
+After user responds, show next improvement or summary.
 
 ## Quick Checks
 
