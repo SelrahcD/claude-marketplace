@@ -80,12 +80,18 @@ Task tool with:
     1. **[Test name]**: [Issue description]
        - Line: [line number]
        - Rule violated: [which rule]
+       - **Problematic code:**
+         ```
+         [The actual code with the problem - ALWAYS include this]
+         ```
        - Suggestion: [how to fix]
 
     ### Summary
     - Tests checked: N
     - Issues found: N
     ```
+
+    **IMPORTANT:** Always include the actual problematic code snippet for each issue found. Never report an issue without showing the code that violates the rule.
 ```
 
 **Categories and their rules files:**
@@ -106,12 +112,17 @@ Collect all agent reports and compile into a single summary.
 
 ### Step 4: Present Improvements One by One
 
-For each violation found by agents, present them **one at a time** to the user.
+For each violation found by agents, present them **one at a time** to the user, **ordered by importance** (major issues first, minor issues last).
+
+**Issue Priority (present in this order):**
+1. **Major** - Breaks test reliability, causes false positives/negatives, or hides bugs
+2. **Medium** - Reduces maintainability, causes confusion, or violates best practices
+3. **Minor** - Style issues, naming improvements, or minor readability concerns
 
 **For each improvement:**
 
 1. Show the issue:
-   - **What's wrong** - Specific issue found
+   - **What's wrong** - Specific issue found, with the problematic code snippet
    - **Why it matters** - Impact on test quality
    - **How to fix** - Concrete code suggestion with before/after code
 

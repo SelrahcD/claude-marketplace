@@ -122,6 +122,43 @@ test('discount applies percentage to price', () => {
 });
 ```
 
+## Extract Factories to Shared Files
+
+Factories and builders should be extracted to dedicated files and reused across multiple test files. Do not recreate them in each test file.
+
+```typescript
+// ❌ Bad: Factory defined in each test file
+// tests/orders.test.ts
+function aMember(overrides = {}) { /* ... */ }
+
+// tests/shipping.test.ts
+function aMember(overrides = {}) { /* ... */ } // Duplicated!
+
+// ✅ Good: Shared factory file
+// tests/factories/member.ts
+export function aMember(overrides: Partial<Member> = {}): Member {
+  return {
+    id: randomId(),
+    name: randomName(),
+    email: randomEmail(),
+    membershipType: 'standard',
+    ...overrides,
+  };
+}
+
+// tests/orders.test.ts
+import { aMember } from './factories/member';
+
+// tests/shipping.test.ts
+import { aMember } from './factories/member';
+```
+
+**Benefits:**
+- Single source of truth for test data creation
+- Changes to object structure only need updating in one place
+- Consistent test data across all test files
+- Easier to maintain as the domain model evolves
+
 ## Builder Pattern for Complex Objects
 
 For objects with many optional fields, use a builder pattern. Name builders `anX` to maintain story-like readability:
@@ -169,6 +206,7 @@ test('shipped order cannot be cancelled', () => {
 
 - [ ] Using factories or builders for object creation
 - [ ] Factory/builder functions named `aSomething` (e.g., `aMember`, `aProduct`, `anOrder`)
+- [ ] Factories extracted to shared files (not duplicated per test file)
 - [ ] No repetitive inline object literals
 - [ ] All asserted values visible in arrange/act phase
 - [ ] No magic numbers or strings in assertions
