@@ -16,19 +16,4 @@ Examples:
 
 ## Process
 
-Invoke the `test-quality` skill to validate the provided test file(s).
-
-For each file provided, the skill will:
-
-1. Read and analyze the test file(s)
-2. Run parallel validation agents for each quality category:
-   - Structure (Arrange-Act-Assert, one behavior per test)
-   - Setup & Data (factories, builders, data visibility)
-   - Dependencies (stubs, spies, fakes)
-   - Naming & Readability (domain vocabulary, custom assertions)
-   - Unit Test Criteria (fast, isolated, concurrent)
-   - Anti-patterns (logic in tests, interdependence, over-mocking)
-   - Database (if applicable)
-3. Aggregate results into a comprehensive report
-4. Propose specific improvements with code suggestions
-5. Offer to apply fixes if requested
+Invoke the `test-quality` skill to validate the provided test file(s). Follow the workflow defined in the skill.
