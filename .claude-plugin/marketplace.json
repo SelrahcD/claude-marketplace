@@ -12,7 +12,7 @@
       "name": "dot-claude",
       "source": "./selrahcd-dot-claude",
       "description": "Claude skills and commands for PR management, test improvements, TDD workflows, and design processes",
-      "version": "1.20.1"
+      "version": "1.20.2"
     },
     {
       "name": "notifications",

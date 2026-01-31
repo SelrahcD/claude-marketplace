@@ -78,6 +78,39 @@ Mocking frameworks (Jest mocks, Vitest mocks) encourage:
 
 Instead, write simple hand-crafted test doubles.
 
+### Exception: Simple Callback Verification
+
+Using `jest.fn()` or `vi.fn()` is acceptable for verifying simple one-shot callbacks, such as React component prop handlers:
+
+```typescript
+// ✅ OK: Simple callback verification
+test('calls onClick handler when button is clicked', () => {
+  const handleClick = jest.fn();
+  render(<Button onClick={handleClick}>Click me</Button>);
+
+  fireEvent.click(screen.getByText('Click me'));
+
+  expect(handleClick).toHaveBeenCalledTimes(1);
+});
+
+// ✅ OK: Verifying callback arguments
+test('calls onChange with new value', () => {
+  const handleChange = jest.fn();
+  render(<Input onChange={handleChange} />);
+
+  fireEvent.change(screen.getByRole('textbox'), { target: { value: 'hello' } });
+
+  expect(handleChange).toHaveBeenCalledWith('hello');
+});
+```
+
+This exception applies when:
+- The function is a simple callback passed as a prop
+- You only need to verify it was called (and optionally with what arguments)
+- There's no complex behavior to stub
+
+For anything more complex (services, repositories, APIs), use hand-crafted test doubles.
+
 ### Stubs for Indirect Inputs
 
 Stubs provide canned answers to calls made during the test.
@@ -246,6 +279,7 @@ test('subscription expires on exact date', () => {
 - [ ] Time handled via explicit date parameter or injected clock
 - [ ] No `new Date()` or `Date.now()` in code under test
 - [ ] Using hand-crafted stubs, spies, fakes (no mocking framework)
+- [ ] Exception: `jest.fn()`/`vi.fn()` OK for simple callback verification
 - [ ] Stubs provide indirect inputs
 - [ ] Spies verify interactions in Assert phase
 - [ ] Fakes used for complex collaborators
