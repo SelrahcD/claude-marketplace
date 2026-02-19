@@ -6,7 +6,7 @@ After each Claude Code session, automatically logs a summary to your Obsidian va
 
 ## How it works
 
-A SessionEnd hook spawns a detached Claude agent (haiku model) that reads the session transcript, triages it, and writes notes via the MCP obsidian server. The MCP server is scoped exclusively to this agent and is not available globally.
+A SessionEnd hook spawns a detached Claude agent (haiku model) that reads the session transcript, triages it, and writes notes via the MCP obsidian server. The MCP obsidian server must be configured globally in `~/.claude.json`.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ Add the plugin to your Claude Code marketplace (already done if using this repo)
 
 ### Step 2: Set the vault path
 
-Add to `~/.zshrc`:
+Add to `~/.zshrc` (or `~/.zsh.conf.d/obsidian` if your dotfiles are shared across machines):
 
 ```bash
 export OBSIDIAN_VAULT_PATH="/path/to/your/obsidian/vault"
@@ -31,7 +31,26 @@ export OBSIDIAN_VAULT_PATH="/path/to/your/obsidian/vault"
 
 This path differs per machine.
 
-### Step 3: Configure project-specific notes (optional)
+### Step 3: Configure MCP obsidian server
+
+Add the MCP obsidian server to `~/.claude.json` (create the file if it doesn't exist):
+
+```json
+{
+  "mcpServers": {
+    "obsidian": {
+      "command": "npx",
+      "args": ["@mauricio.wolff/mcp-obsidian@latest", "/path/to/your/obsidian/vault"]
+    }
+  }
+}
+```
+
+Replace the vault path with your actual path. This makes the MCP available to the doc-writer agent (and optionally to your regular Claude sessions too).
+
+To avoid slow `npx` downloads, you can pre-install globally: `npm install -g @mauricio.wolff/mcp-obsidian@latest`
+
+### Step 4: Configure project-specific notes (optional)
 
 In any git repo, create `.obsidian-bridge.json` at the root:
 

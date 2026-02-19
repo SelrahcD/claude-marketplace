@@ -19,6 +19,7 @@ if [ -z "${OBSIDIAN_VAULT_PATH:-}" ]; then
 fi
 
 # ─── Config ───────────────────────────────────────────────────────────────────
+PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOGDIR="$HOME/.claude/obsidian-bridge-logs"
 MIN_MESSAGES=5
 AGENT_TIMEOUT=300
@@ -87,10 +88,7 @@ Time: $(date '+%H:%M')
 Project config (.obsidian-bridge.json):
 $CONFIG_CONTENT
 
-Read the transcript at the path above, then follow your agent instructions to triage and document this session. Never ask for confirmation."
-
-# ─── MCP config ───────────────────────────────────────────────────────────────
-MCP_CONFIG="{\"obsidian\":{\"command\":\"npx\",\"args\":[\"@mauricio.wolff/mcp-obsidian@latest\",\"$OBSIDIAN_VAULT_PATH\"]}}"
+Read $PLUGIN_ROOT/agents/obsidian-doc-writer.md and execute all phases immediately. Never ask for confirmation."
 
 # ─── Spawn doc-writer agent ──────────────────────────────────────────────────
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
@@ -102,8 +100,6 @@ nohup $TIMEOUT_CMD $AGENT_TIMEOUT env \
   CLAUDE_HOOK_SPAWNED=1 \
   claude --print \
   --model haiku \
-  --mcp-config "$MCP_CONFIG" \
-  --strict-mcp-config \
   --dangerously-skip-permissions \
   -p "$PROMPT" \
   > "$LOGDIR/doc-writer-${TIMESTAMP}.log" 2>&1 &

@@ -34,21 +34,11 @@ selrahcd-obsidian-bridge/
 
 - **`OBSIDIAN_VAULT_PATH`**: Global env var pointing to the Obsidian vault root. Set in `.zshrc` or `.zshenv`. Different per machine. Also serves as enable/disable guard (not set = hook exits silently).
 
-### MCP Obsidian — Scoped to the Doc-Writer Only
+### MCP Obsidian — Global Configuration
 
-The MCP obsidian server is NOT configured globally. The session-end script passes it inline only to the spawned doc-writer agent:
+The MCP obsidian server is configured globally in `~/.claude.json`. The spawned doc-writer agent inherits this configuration. `--mcp-config` with `--strict-mcp-config` was found to cause `claude --print` to hang indefinitely, so the global approach is required.
 
-```bash
-claude --print --model haiku \
-  --mcp-config '{"obsidian":{"command":"npx","args":["@mauricio.wolff/mcp-obsidian@latest","'"$OBSIDIAN_VAULT_PATH"'"]}}' \
-  --strict-mcp-config \
-  -p "..."
-```
-
-This ensures:
-- Regular Claude sessions don't have Obsidian MCP access
-- Only the doc-writer agent can read/write the vault
-- The vault path is resolved dynamically from the env var
+The agent also reads its instructions from disk (the prompt tells it to `Read $PLUGIN_ROOT/agents/obsidian-doc-writer.md`), matching the pattern used by KnutFr/HomeAIPublic.
 
 ### Project Config: `.obsidian-bridge.json`
 
