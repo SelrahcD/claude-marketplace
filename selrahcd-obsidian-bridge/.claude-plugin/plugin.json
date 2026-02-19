@@ -1,0 +1,12 @@
+{
+  "name": "obsidian-bridge",
+  "version": "1.0.0",
+  "description": "Auto-document Claude sessions to an Obsidian vault via SessionEnd hook",
+  "author": {
+    "name": "Selrahcd",
+    "url": "https://github.com/SelrahcD"
+  },
+  "repository": "https://github.com/SelrahcD/claude-marketplace",
+  "license": "MIT",
+  "keywords": ["obsidian", "documentation", "hooks", "session-log"]
+}
