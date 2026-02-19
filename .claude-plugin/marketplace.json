@@ -19,6 +19,12 @@
       "source": "./selrahcd-notifications",
       "description": "System notifications for Claude Code events (SessionStart, SessionEnd, Stop, Notification)",
       "version": "1.1.0"
+    },
+    {
+      "name": "obsidian-bridge",
+      "source": "./selrahcd-obsidian-bridge",
+      "description": "Auto-document Claude sessions to an Obsidian vault via SessionEnd hook",
+      "version": "1.0.0"
     }
   ]
 }
