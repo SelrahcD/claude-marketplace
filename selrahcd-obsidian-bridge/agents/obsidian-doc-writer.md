@@ -119,14 +119,42 @@ For each note path listed in `notes`:
 
 5. Use MCP obsidian `write_note` with the appropriate mode to save the updated note.
 
+## Debug Logging
+
+Output verbose debug logs to stdout (they are captured in the agent log file). Prefix all debug lines with `[DEBUG]`.
+
+At minimum, log:
+- Start and end of each phase
+- Every MCP tool call you make (tool name, arguments, success/failure, response summary)
+- Every decision point (triage result, insertion point found, section located, etc.)
+- Content lengths (transcript size, note size before/after edits)
+- Any errors or unexpected conditions with full details
+
+Example:
+```
+[DEBUG] Phase 1 - Reading transcript at /path/to/transcript
+[DEBUG] Phase 1 - Transcript read OK, 45230 chars, found 12 user messages
+[DEBUG] Phase 1 - Triage decision: DOCUMENT (feature implementation session)
+[DEBUG] Phase 2 - Daily note path: 🗓️ DailyNotes/2026/02/2026-02-19.md
+[DEBUG] Phase 2 - Calling read_note(path="🗓️ DailyNotes/2026/02/2026-02-19.md")
+[DEBUG] Phase 2 - read_note result: success, 2340 chars
+[DEBUG] Phase 2 - Looking for '## What did I do?' section
+[DEBUG] Phase 2 - Found section at line 15
+[DEBUG] Phase 2 - Looking for tasks block closing backticks after line 15
+[DEBUG] Phase 2 - Found closing backticks at line 18
+[DEBUG] Phase 2 - Insertion point: after line 18
+[DEBUG] Phase 2 - Calling write_note with mode=overwrite, content length=2580 chars
+[DEBUG] Phase 2 - write_note result: success
+```
+
 ## Error Handling
 
-Handle all errors silently. Do not surface errors to stdout or produce any output on failure.
+Log all errors with `[ERROR]` prefix and full details, then continue.
 
-- If `transcript_path` does not exist or cannot be read: exit immediately without writing anything.
-- If the daily note does not exist: skip Phase 2, continue to Phase 3.
-- If a project note does not exist: skip that note, continue with the remaining notes.
-- On any unexpected error during a write: do not retry; skip that note and continue. Never write partial or corrupt content.
-- If an MCP tool call fails: treat it as a missing note (skip and continue).
+- If `transcript_path` does not exist or cannot be read: log the error and exit.
+- If the daily note does not exist: log `[DEBUG] Daily note not found, skipping Phase 2`, continue to Phase 3.
+- If a project note does not exist: log and skip that note, continue with the remaining notes.
+- On any unexpected error during a write: log the full error, do not retry; skip that note and continue. Never write partial or corrupt content.
+- If an MCP tool call fails: log the full error response, treat it as a missing note (skip and continue).
 
 Under no circumstances should an error in one phase prevent the other phases from running, except for a missing or unreadable transcript (which aborts all phases).
