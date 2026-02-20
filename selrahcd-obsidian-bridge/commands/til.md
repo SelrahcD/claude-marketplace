@@ -41,7 +41,21 @@ Present both options with your recommendation. Ask the user to confirm.
 
 Example: "This seems like a quick fact — I'd suggest **inline bullets**. Or would you prefer a **standalone note** for more detail?"
 
-### 5. Draft content
+### 5. Propose note location (standalone only)
+
+If the user chose **standalone note** format, propose a location before drafting:
+
+Use the Obsidian MCP `list_directory` tool to check what folders exist in the vault. Suggest a location based on the topic:
+
+- **Technical concepts** (language features, libraries, patterns) → a subfolder under `🧠 Ressources/`
+- **Project-specific learnings** → near the project note if one is referenced in `.obsidian-bridge.json`
+- **General insights** → vault root
+
+Default to vault root if unsure. Present the suggested path (folder + filename) and ask the user to confirm. Use the topic phrase as the filename with words capitalized.
+
+Skip this step for inline format.
+
+### 6. Draft content
 
 **If inline format:** Draft 1-3 concise bullet points. Use `[[wiki-links]]` to related concepts where appropriate.
 
@@ -54,15 +68,18 @@ Example: "This seems like a quick fact — I'd suggest **inline bullets**. Or wo
    - `[[wiki-links]]` to related notes
 2. The TIL section entry: a wiki-link to the new note with a brief summary.
 
-### 6. Present draft for validation
+### 7. Present draft for validation
 
 Show the complete draft to the user — the TIL entry and the standalone note content if applicable. Ask them to approve it or request changes. Do **NOT** write anything to the vault until the user explicitly approves.
 
-### 7. Write content
+### 8. Write content
 
-**If standalone note:** Propose a location for the note first. Use the Obsidian MCP `list_directory` tool to check what folders exist in the vault. Suggest a location based on the topic (technical concepts under `🧠 Ressources/`, project-specific near the project note, general at vault root). Default to vault root if unsure. Ask the user to confirm the path. Then create the note with `write_note`.
-
-**For both formats:** Read today's daily note at `🗓️ DailyNotes/YYYY/MM/YYYY-MM-DD.md` (using today's date) with `read_note`. Find the `## TIL ?` section. Use `patch_note` to append the entry at the end of the TIL section (before the next `##` heading). Ensure blank line spacing for valid markdown.
+1. **If standalone note:** Use `write_note` to create the note at the confirmed path.
+2. Compute today's daily note path: `🗓️ DailyNotes/YYYY/MM/YYYY-MM-DD.md` (using today's date).
+3. Use `read_note` to read the daily note.
+4. If the daily note doesn't exist, tell the user and skip the remaining sub-steps.
+5. Find the `## TIL ?` section.
+6. Use `patch_note` to append the entry at the end of the TIL section (before the next `##` heading). Ensure blank line spacing for valid markdown.
 
 Entry format for inline:
 ```
@@ -74,9 +91,7 @@ Entry format for standalone link:
 - [[Note Title]] — brief one-line summary
 ```
 
-If the daily note doesn't exist or the TIL section can't be found, tell the user and skip this step.
-
-### 8. Confirm
+### 9. Confirm
 
 Tell the user:
 - What was added to the TIL section (inline bullets or a wiki-link)
