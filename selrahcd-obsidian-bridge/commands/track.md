@@ -12,7 +12,7 @@ Capture a notable learning, insight, or discovery from the current conversation 
 
 ### 1. Load project config
 
-Check if `.obsidian-bridge.json` exists at the git repo root (use `git rev-parse --show-toplevel`). If found, read it to get the project name and tags. These will be used later for tagging and context.
+Check if `.obsidian-bridge.json` exists at the git repo root (use `git rev-parse --show-toplevel`). If found, read it to get the project name and tags. These will be used later for tagging and context. If not found, continue without project context.
 
 ### 2. Detect topic
 
@@ -28,6 +28,8 @@ Otherwise, analyze the current conversation to identify the most notable learnin
 
 Present the detected topic as a short phrase (3-8 words) to the user. Ask them to confirm or adjust. Wait for their response before continuing.
 
+Example: "I'd like to track: **Scrutiny Mode pattern for review-friendly refactoring**. Does this capture what you want to track, or would you prefer a different topic?"
+
 ### 4. Propose note location
 
 Use the Obsidian MCP `list_directory` tool to check what folders exist in the vault. Suggest a location based on the topic:
@@ -36,7 +38,9 @@ Use the Obsidian MCP `list_directory` tool to check what folders exist in the va
 - **Project-specific learnings** → near the project note if one is referenced in `.obsidian-bridge.json`
 - **General insights** → vault root
 
-Default to vault root if unsure. Present the suggested path to the user and ask them to confirm or provide a different location.
+Default to vault root if unsure. Present the suggested path (folder + filename) to the user and ask them to confirm or provide a different location. Use the topic phrase as the filename with words capitalized.
+
+Example: "I'll create the note at **🧠 Ressources/Development/Scrutiny Mode - Review-Friendly Refactoring Pattern.md**. Good location, or would you prefer somewhere else?"
 
 ### 5. Draft note content
 
@@ -62,7 +66,7 @@ Compute today's daily note path: `🗓️ DailyNotes/YYYY/MM/YYYY-MM-DD.md` (usi
 
 Use the Obsidian MCP `read_note` tool to read the daily note. Find the `## What did I do?` section, then locate the tasks code block (` ```tasks ... ``` `).
 
-Use `patch_note` to insert a bullet point **after** the closing backticks of that tasks block:
+Use `patch_note` to insert a bullet point **after** the closing backticks of that tasks block. Ensure there is a blank line before and after the inserted entry for valid markdown spacing:
 
 ```
 - Tracked: [[Note Title]] #tag1 #tag2
