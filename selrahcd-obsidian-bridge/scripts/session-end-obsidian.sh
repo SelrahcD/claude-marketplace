@@ -164,7 +164,8 @@ IMPORTANT DEBUG MODE: Before executing phases, log your progress by outputting l
 - [DEBUG] Found tasks block closing backticks: yes/no (at line N)
 - [DEBUG] Insertion point determined: line N
 - [DEBUG] Entry to insert: <the entry text>
-- [DEBUG] Daily note write result: success/error
+- [DEBUG] patch_note oldString: <the anchor text>
+- [DEBUG] patch_note result: success/error
 - [DEBUG] Starting Phase 3 - Project Notes
 - [DEBUG] Project notes to update: <list>
 - [DEBUG] For each note: read result, insertion point, write result

@@ -70,16 +70,27 @@ For example, for date `2026-02-19` the path is `🗓️ DailyNotes/2026/02/2026-
 
 1. Use the MCP obsidian `read_note` tool to retrieve the current content of the daily note.
 2. If the note does not exist or cannot be read, skip this phase entirely and proceed to Phase 3.
-3. Locate the `## What did I do?` section.
-4. Within that section, find the tasks code block that follows the heading. The block looks like:
-   ````
-   ```tasks
-   done on YYYY-MM-DD
-   ```
-   ````
-5. Find the line immediately after the closing triple-backtick of that tasks block. This is the insertion point.
-6. Insert the session entry at that position. Leave exactly one blank line between the closing backticks and the new entry, and one blank line after the entry before whatever follows.
-7. Use MCP obsidian `write_note` with `mode: overwrite` to save the complete updated content.
+3. Locate the `## What did I do?` section and confirm it contains a tasks code block.
+4. Use the MCP obsidian `patch_note` tool to insert the entry. The `oldString` must be a unique anchor from the existing note — typically the tasks block closing backticks and whatever immediately follows them. The `newString` is that same anchor text with the new entry inserted after the closing backticks.
+
+**CRITICAL — Use `patch_note`, never `write_note` with `mode: overwrite`:**
+Using `write_note` with `mode: overwrite` requires reconstructing the entire note content, which causes double-escaping of special characters (`\n` → `\\n`, `"` → `\\\"`), corrupting the note. The `patch_note` tool only touches the targeted string, leaving all other content untouched.
+
+**How to construct the patch:**
+- `oldString`: Use the closing triple-backtick line of the tasks block plus the text that immediately follows it (enough to be unique). For example, if nothing follows the tasks block yet, use just the closing backticks. If there are already entries, use the closing backticks and the first entry's heading.
+- `newString`: The same `oldString` text, but with the new session entry inserted between the closing backticks and whatever followed them. Leave exactly one blank line between the closing backticks and the new entry, and one blank line after the entry.
+
+Example patch for a note with no existing entries after the tasks block:
+```
+oldString: "```\n\n## What was good today?"
+newString: "```\n\n### Brief descriptive title\n#ai-assisted/claude\n\nSummary paragraph.\n\n- Key detail\n\n## What was good today?"
+```
+
+Example patch for a note that already has entries:
+```
+oldString: "```\n\n### Existing first entry title"
+newString: "```\n\n### New entry title\n#ai-assisted/claude\n\nSummary.\n\n### Existing first entry title"
+```
 
 ### Session Entry Format
 
@@ -114,7 +125,7 @@ For each note path listed in `notes`:
 3. Determine the insertion point:
    - If the note contains a `## Current Work` or `## Recent Activity` section, append inside that section (at its end, before the next `##` heading or end of file).
    - Otherwise, append at the very end of the file.
-4. Append the following dated entry:
+4. Use MCP obsidian `patch_note` to insert the following dated entry at the determined insertion point:
 
 ```markdown
 ### YYYY-MM-DD — Brief descriptive title
@@ -127,7 +138,7 @@ A freeform paragraph summarizing what happened. See [[🗓️ DailyNotes/YYYY/MM
 
    Replace `YYYY-MM-DD` with the `date` input value. The `[[...]]` link points to the daily note created in Phase 2. Do not add tags to project note entries.
 
-5. Use MCP obsidian `write_note` with the appropriate mode to save the updated note.
+   **Use `patch_note` the same way as in Phase 2**: find a unique anchor string at the insertion point, and replace it with itself plus the new entry. If appending at end of file, use `write_note` with `mode: append` instead. Never use `write_note` with `mode: overwrite`.
 
 ## Debug Logging
 
@@ -153,8 +164,8 @@ Example:
 [DEBUG] Phase 2 - Looking for tasks block closing backticks after line 15
 [DEBUG] Phase 2 - Found closing backticks at line 18
 [DEBUG] Phase 2 - Insertion point: after line 18
-[DEBUG] Phase 2 - Calling write_note with mode=overwrite, content length=2580 chars
-[DEBUG] Phase 2 - write_note result: success
+[DEBUG] Phase 2 - Calling patch_note with oldString length=45, newString length=320
+[DEBUG] Phase 2 - patch_note result: success
 ```
 
 ## Error Handling
