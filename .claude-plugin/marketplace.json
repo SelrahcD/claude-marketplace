@@ -24,7 +24,7 @@
       "name": "obsidian-bridge",
       "source": "./selrahcd-obsidian-bridge",
       "description": "Auto-document Claude sessions to an Obsidian vault via SessionEnd hook",
-      "version": "1.2.0"
+      "version": "1.3.0"
     }
   ]
 }

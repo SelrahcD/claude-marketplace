@@ -52,7 +52,7 @@ To avoid slow `npx` downloads, you can pre-install globally: `npm install -g @ma
 
 ### Step 4: Configure project-specific notes (optional)
 
-In any git repo, create `.obsidian-bridge.json` at the root:
+In any git repo, create `.claude/obsidian-bridge.json`:
 
 ```json
 {

@@ -1,11 +1,11 @@
 ---
 name: init-obsidian-bridge
-description: Create an .obsidian-bridge.json config file for the current project
+description: Create a .claude/obsidian-bridge.json config file for the current project
 ---
 
 # Init Obsidian Bridge
 
-Create an `.obsidian-bridge.json` config file in the current git repo root so that the obsidian-bridge SessionEnd hook knows how to log sessions for this project.
+Create a `.claude/obsidian-bridge.json` config file in the current git repo so that the obsidian-bridge SessionEnd hook knows how to log sessions for this project.
 
 ## Steps
 
@@ -15,7 +15,7 @@ Use `git rev-parse --show-toplevel` to find the git repo root. If not in a git r
 
 ### 2. Check for existing config
 
-Check if `.obsidian-bridge.json` already exists at the repo root. If it does, show its contents and ask the user if they want to overwrite it. If they say no, stop.
+Check if `.claude/obsidian-bridge.json` already exists at the repo root. If it does, show its contents and ask the user if they want to overwrite it. If they say no, stop.
 
 ### 3. Ask for project name
 
@@ -41,7 +41,7 @@ The `notes` array can be empty if the user doesn't want project-specific note up
 
 ### 6. Write the config file
 
-Write `.obsidian-bridge.json` at the repo root:
+Ensure the `.claude/` directory exists at the repo root (create it if needed). Write `obsidian-bridge.json` inside it:
 
 ```json
 {
@@ -53,4 +53,4 @@ Write `.obsidian-bridge.json` at the repo root:
 
 ### 7. Confirm
 
-Show the user what was written and where. Remind them that this file tells the obsidian-bridge hook how to log Claude sessions for this project.
+Show the user what was written and where (`.claude/obsidian-bridge.json`). Remind them that this file tells the obsidian-bridge hook how to log Claude sessions for this project.

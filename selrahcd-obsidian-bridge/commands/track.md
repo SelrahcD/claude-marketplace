@@ -12,7 +12,7 @@ Capture a notable learning, insight, or discovery from the current conversation 
 
 ### 1. Load project config
 
-Check if `.obsidian-bridge.json` exists at the git repo root (use `git rev-parse --show-toplevel`). If found, read it to get the project name and tags. These will be used later for tagging and context. If not found, continue without project context.
+Check if `.claude/obsidian-bridge.json` exists at the git repo root (use `git rev-parse --show-toplevel`). If found, read it to get the project name and tags. These will be used later for tagging and context. If not found, continue without project context.
 
 ### 2. Detect topic
 
@@ -35,7 +35,7 @@ Example: "I'd like to track: **Scrutiny Mode pattern for review-friendly refacto
 Use the Obsidian MCP `list_directory` tool to check what folders exist in the vault. Suggest a location based on the topic:
 
 - **Technical concepts** (language features, libraries, patterns) → a subfolder under `🧠 Ressources/`
-- **Project-specific learnings** → near the project note if one is referenced in `.obsidian-bridge.json`
+- **Project-specific learnings** → near the project note if one is referenced in `.claude/obsidian-bridge.json`
 - **General insights** → vault root
 
 Default to vault root if unsure. Present the suggested path (folder + filename) to the user and ask them to confirm or provide a different location. Use the topic phrase as the filename with words capitalized.

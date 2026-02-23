@@ -100,22 +100,22 @@ if [ "$USER_MSG_COUNT" -lt "$MIN_MESSAGES" ]; then
   exit 0
 fi
 
-# ─── Find .obsidian-bridge.json ───────────────────────────────────────────────
+# ─── Find .claude/obsidian-bridge.json ────────────────────────────────────────
 CONFIG_FILE=""
 CONFIG_CONTENT=""
 
-log "DEBUG searching for .obsidian-bridge.json"
+log "DEBUG searching for .claude/obsidian-bridge.json"
 if [ -n "$WORKING_DIR" ]; then
-  log "DEBUG checking $WORKING_DIR/.obsidian-bridge.json"
-  if [ -f "$WORKING_DIR/.obsidian-bridge.json" ]; then
-    CONFIG_FILE="$WORKING_DIR/.obsidian-bridge.json"
+  log "DEBUG checking $WORKING_DIR/.claude/obsidian-bridge.json"
+  if [ -f "$WORKING_DIR/.claude/obsidian-bridge.json" ]; then
+    CONFIG_FILE="$WORKING_DIR/.claude/obsidian-bridge.json"
     log "DEBUG found config at working dir"
   else
     log "DEBUG not found at working dir, checking git root"
     GIT_ROOT=$(git -C "$WORKING_DIR" rev-parse --show-toplevel 2>/dev/null || echo "")
     log "DEBUG git root=$GIT_ROOT"
-    if [ -n "$GIT_ROOT" ] && [ -f "$GIT_ROOT/.obsidian-bridge.json" ]; then
-      CONFIG_FILE="$GIT_ROOT/.obsidian-bridge.json"
+    if [ -n "$GIT_ROOT" ] && [ -f "$GIT_ROOT/.claude/obsidian-bridge.json" ]; then
+      CONFIG_FILE="$GIT_ROOT/.claude/obsidian-bridge.json"
       log "DEBUG found config at git root"
     else
       log "DEBUG no config found at git root either"
@@ -129,7 +129,7 @@ if [ -n "$CONFIG_FILE" ]; then
   CONFIG_CONTENT=$(cat "$CONFIG_FILE")
   log "DEBUG config content: $CONFIG_CONTENT"
 else
-  log "DEBUG no .obsidian-bridge.json found anywhere"
+  log "DEBUG no .claude/obsidian-bridge.json found anywhere"
 fi
 
 # ─── Wait for transcript finalization ─────────────────────────────────────────
@@ -149,7 +149,7 @@ Obsidian vault path: $OBSIDIAN_VAULT_PATH
 Date: $(date '+%Y-%m-%d')
 Time: $(date '+%H:%M')
 
-Project config (.obsidian-bridge.json):
+Project config (.claude/obsidian-bridge.json):
 $CONFIG_CONTENT
 
 IMPORTANT DEBUG MODE: Before executing phases, log your progress by outputting lines prefixed with [DEBUG].

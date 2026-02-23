@@ -33,7 +33,7 @@ The prompt provides:
 - `transcript_path`: absolute path to the session transcript file
 - `vault_path`: absolute path to the Obsidian vault root
 - `date`: the session date in `YYYY-MM-DD` format
-- `project_config` (optional): parsed contents of the project's `.obsidian-bridge.json`, which may include a `tags` array and a `notes` array
+- `project_config` (optional): parsed contents of the project's `.claude/obsidian-bridge.json`, which may include a `tags` array and a `notes` array
 
 ## Phase 1 — Triage
 
