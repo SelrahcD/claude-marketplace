@@ -83,19 +83,24 @@ For example, for date `2026-02-19` the path is `🗓️ DailyNotes/2026/02/2026-
 
 ### Session Entry Format
 
-Construct a brief, informative entry. The tags come from the project config `tags` array, each prefixed with `#`. If no project config or no tags are present, omit the tag portion.
+Construct a brief, informative entry. Always include the `#ai-assisted/claude` tag. Add project tags from the config `tags` array, each prefixed with `#`. If no project config or no tags are present, only use `#ai-assisted/claude`.
 
 ```markdown
-### Claude session — Brief descriptive title
-- What was accomplished #tag1 #tag2
-- Key details with [[wiki-links]] to relevant Obsidian notes
-  - Sub-details indented as needed
+### Brief descriptive title
+#ai-assisted/claude #project-tag1 #project-tag2
+
+A freeform paragraph summarizing what happened — context, decisions, outcomes.
+
+- Key detail or artifact
+- Another detail with [[wiki-links]] to relevant Obsidian notes
 ```
 
 Guidelines:
-- The title should be a concise description of the primary work done (e.g., "Fix authentication bug in login flow")
+- The title should be a concise description of the primary work done (e.g., "Fix authentication bug in login flow") — no "Claude session" prefix
+- Tags go on their own line directly below the title
+- Write a freeform paragraph first, then bullet points for specifics
 - Use Obsidian `[[wiki-links]]` to cross-reference related notes when relevant
-- Keep the summary to 3–8 bullet points — concise but informative
+- Keep bullet points to 2–5 items — concise but informative
 - Preserve ALL existing content in the daily note; only insert the new entry at the identified position
 
 ## Phase 3 — Project Notes
@@ -112,10 +117,15 @@ For each note path listed in `notes`:
 4. Append the following dated entry:
 
 ```markdown
-- **YYYY-MM-DD**: Brief summary — see [[🗓️ DailyNotes/YYYY/MM/YYYY-MM-DD]]
+### YYYY-MM-DD — Brief descriptive title
+
+A freeform paragraph summarizing what happened. See [[🗓️ DailyNotes/YYYY/MM/YYYY-MM-DD]] for details.
+
+- Key detail
+- Another detail
 ```
 
-   Replace `YYYY-MM-DD` with the `date` input value. The `[[...]]` link points to the daily note created in Phase 2.
+   Replace `YYYY-MM-DD` with the `date` input value. The `[[...]]` link points to the daily note created in Phase 2. Do not add tags to project note entries.
 
 5. Use MCP obsidian `write_note` with the appropriate mode to save the updated note.
 

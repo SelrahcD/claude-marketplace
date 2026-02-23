@@ -71,9 +71,12 @@ In any git repo, create `.claude/obsidian-bridge.json`:
 The agent inserts under the "What did I do?" section:
 
 ```markdown
-### Claude session — Brief title
-- What was done #tag1 #tag2
-- Details with [[wiki-links]]
+### Brief descriptive title
+#ai-assisted/claude #project-tag
+
+A freeform paragraph summarizing the session.
+
+- Key details with [[wiki-links]]
 ```
 
 ## Logs
