@@ -355,10 +355,10 @@ git commit -m "feat(obsidian-bridge): add project config for this repo"
 
 ```bash
 echo $OBSIDIAN_VAULT_PATH
-# Should print: /Users/charles.desneuf/Obsidian
+# Should print your vault path, e.g.: /home/username/Obsidian
 ```
 
-If not set, add to `~/.zshrc`: `export OBSIDIAN_VAULT_PATH="/Users/charles.desneuf/Obsidian"`
+If not set, add to `~/.zshrc`: `export OBSIDIAN_VAULT_PATH="$HOME/Obsidian"`
 
 **Step 2: Verify the hook is registered**
 

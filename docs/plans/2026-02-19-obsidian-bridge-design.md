@@ -129,8 +129,8 @@ export OBSIDIAN_VAULT_PATH="/path/to/your/obsidian/vault"
 ```
 
 This is different on each machine. Examples:
-- Laptop 1: `export OBSIDIAN_VAULT_PATH="/Users/charles/Obsidian"`
-- Laptop 2: `export OBSIDIAN_VAULT_PATH="/Users/charles.desneuf/Obsidian"`
+- macOS: `export OBSIDIAN_VAULT_PATH="$HOME/Obsidian"`
+- Linux: `export OBSIDIAN_VAULT_PATH="$HOME/Obsidian"`
 
 #### 3. Ensure Node.js is available
 
