@@ -83,7 +83,7 @@ Using `write_note` with `mode: overwrite` requires reconstructing the entire not
 Example patch for a note with no existing entries after the tasks block:
 ```
 oldString: "```\n\n## What was good today?"
-newString: "```\n\n### Brief descriptive title\n#ai-assisted/claude\n\nSummary paragraph.\n\n- Key detail\n\n## What was good today?"
+newString: "```\n\n### Brief descriptive title\n#ai-assisted/claude\n\nSummary paragraph.\n\n## What was good today?"
 ```
 
 Example patch for a note that already has entries:
@@ -100,18 +100,14 @@ Construct a brief, informative entry. Always include the `#ai-assisted/claude` t
 ### Brief descriptive title
 #ai-assisted/claude #project-tag1 #project-tag2
 
-A freeform paragraph summarizing what happened — context, decisions, outcomes.
-
-- Key detail or artifact
-- Another detail with [[wiki-links]] to relevant Obsidian notes
+A freeform paragraph summarizing what happened — context, decisions, and the impact of the changes on the codebase or project.
 ```
 
 Guidelines:
 - The title should be a concise description of the primary work done (e.g., "Fix authentication bug in login flow") — no "Claude session" prefix
 - Tags go on their own line directly below the title
-- Write a freeform paragraph first, then bullet points for specifics
+- Write a freeform paragraph summarizing the session, focusing on the impact of the changes (what improved, what was unblocked, what behavior changed)
 - Use Obsidian `[[wiki-links]]` to cross-reference related notes when relevant
-- Keep bullet points to 2–5 items — concise but informative
 - Preserve ALL existing content in the daily note; only insert the new entry at the identified position
 
 ## Phase 3 — Project Notes
@@ -131,9 +127,6 @@ For each note path listed in `notes`:
 ### YYYY-MM-DD — Brief descriptive title
 
 A freeform paragraph summarizing what happened. See [[🗓️ DailyNotes/YYYY/MM/YYYY-MM-DD]] for details.
-
-- Key detail
-- Another detail
 ```
 
    Replace `YYYY-MM-DD` with the `date` input value. The `[[...]]` link points to the daily note created in Phase 2. Do not add tags to project note entries.
