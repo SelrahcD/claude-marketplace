@@ -191,25 +191,33 @@ Test IS failing. Addressing what the error message demands...
         2. Ask clarifying questions if needed
         3. Determine what behavior needs testing
         4. Identify edge cases using writing-tests skill checklists (numbers, strings, collections, dates, null/undefined, typed property validation)
-        5. Write test for specific behavior
-        6. Run test (use Bash tool to execute test command)
-        7. VERIFY test fails correctly
-        8. Show exact failure message to user (copy/paste verbatim output)
-        9. Justify why failure message proves test is correct
-        10. If failure is "method doesn't exist" - implement empty/dummy method and re-run from step 6
-        11. Repeat until you get a "meaningful" failure
-        12. Improve the code to produce a more explicit error message. Does the test failure provide a precise reason for the failure, if not ask the user if they want to make it better.
-        13. Run quick test quality checks:
+        5. Write ONE test for specific behavior
+        6. 🚨 VERIFY only ONE new test was written. If more than one test was added, remove the extras and keep only the simplest/most focused one. TDD means one test at a time.
+        7. Run test (use Bash tool to execute test command)
+        8. VERIFY test fails correctly
+        9. Show exact failure message to user (copy/paste verbatim output)
+        10. Justify why failure message proves test is correct
+        11. If test PASSES (does not fail):
+            🚨 This test does NOT drive new behavior - it's already satisfied by existing code.
+            a. Keep this test aside for later (note it in the test list as "already passing")
+            b. Find a different test from the list that DOES fail
+            c. If no test from the list fails, consider whether the feature is already complete
+            d. Return to step 5 with the new test
+        12. If failure is "method doesn't exist" - implement empty/dummy method and re-run from step 7
+        13. Repeat until you get a "meaningful" failure
+        14. Improve the code to produce a more explicit error message. Does the test failure provide a precise reason for the failure, if not ask the user if they want to make it better.
+        15. Run quick test quality checks:
             - Can you understand the test without reading implementation?
             - Are asserted values visible in the test setup?
             - Is there only one reason this test would fail?
             - Does the test name describe a behavior?
             - Would the test break if implementation changes but behavior doesn't?
-        14. If any check fails, fix the test before proceeding
-        15. Transition to RED
+        16. If any check fails, fix the test before proceeding
+        17. Transition to RED
       </actions>
 
       <post_conditions>
+        ✓ Exactly ONE new test written (no more)
         ✓ Test written and executed
         ✓ Test FAILED correctly (red bar achieved)
         ✓ Failure message shown to user verbatim
@@ -221,9 +229,10 @@ Test IS failing. Addressing what the error message demands...
       <validation_before_transition>
         BEFORE transitioning to RED, announce:
         "Pre-transition validation:
+        ✓ Only one test written: [yes - single test verified]
         ✓ Test written: [yes]
         ✓ Test executed: [yes]
-        ✓ Test failed correctly: [yes]
+        ✓ Test failed correctly: [yes - not already passing]
         ✓ Failure message shown: [yes - output above]
         ✓ Meaningful failure: [yes - justification]
         ✓ Quick quality checks:
@@ -585,6 +594,8 @@ Test IS failing. Addressing what the error message demands...
         - Changed test assertion to match implementation (instead of fixing implementation)
         - Implemented full solution when hardcoded value would satisfy error
         - Skipped mandatory self-check before implementing
+        - Wrote more than one test in TEST SETUP
+        - Proceeded to RED with a test that was already passing
       </trigger>
 
       <actions>
