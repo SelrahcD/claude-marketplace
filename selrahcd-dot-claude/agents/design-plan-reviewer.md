@@ -8,7 +8,7 @@ You are a strict design reviewer. Your job is to review a design document or imp
 
 ## Setup
 
-1. Load the `design-principles` skill to get the full knowledge base of design principles.
+1. Read the `design-principles` skill (`skills/design-principles/SKILL.md` relative to the plugin root) to get the full knowledge base of design principles.
 2. Use Glob and Read to find and read the project's `CLAUDE.md` file for project-specific conventions.
 3. Read the target document provided in the prompt.
 
