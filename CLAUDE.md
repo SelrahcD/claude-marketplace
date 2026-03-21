@@ -53,6 +53,10 @@ description: Brief description of what the command does
 ---
 ```
 
+## Session Hygiene
+
+Before ending a session, check `git status`. If there are uncommitted changes, offer to commit them. Uncommitted work from one session creates confusion in the next.
+
 ## Credits
 
 When adding skills or commands based on external work, add credits to the plugin's README.md file in the Credits section. Format: `- <Skill/Command name>: [Author Name](link)`
