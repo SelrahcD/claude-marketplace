@@ -79,6 +79,29 @@ A freeform paragraph summarizing the session.
 - Key details with [[wiki-links]]
 ```
 
+## Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OBSIDIAN_VAULT_PATH` | *(required)* | Path to your Obsidian vault |
+| `OBSIDIAN_BRIDGE_AUTO_REPORT` | `false` | Set to `true` to enable the automatic session-end report |
+
+To enable the auto-report, add to your shell profile or Claude Code settings:
+
+```bash
+export OBSIDIAN_BRIDGE_AUTO_REPORT=true
+```
+
+Or in `~/.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "OBSIDIAN_BRIDGE_AUTO_REPORT": "true"
+  }
+}
+```
+
 ## Logs
 
 Check `~/.claude/obsidian-bridge-logs/` for hook logs and agent output.

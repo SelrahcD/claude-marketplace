@@ -29,6 +29,12 @@ if [ "${CLAUDE_HOOK_SPAWNED:-}" = "1" ]; then
   exit 0
 fi
 
+# ─── Opt-out check ────────────────────────────────────────────────────────────
+if [ "${OBSIDIAN_BRIDGE_AUTO_REPORT:-false}" != "true" ]; then
+  log "EXIT auto-report disabled (OBSIDIAN_BRIDGE_AUTO_REPORT=${OBSIDIAN_BRIDGE_AUTO_REPORT:-<unset>})"
+  exit 0
+fi
+
 # ─── Vault path check ────────────────────────────────────────────────────────
 if [ -z "${OBSIDIAN_VAULT_PATH:-}" ]; then
   log "EXIT OBSIDIAN_VAULT_PATH is empty or unset"
