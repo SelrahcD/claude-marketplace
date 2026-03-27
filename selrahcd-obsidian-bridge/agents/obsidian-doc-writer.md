@@ -78,35 +78,33 @@ Using `write_note` with `mode: overwrite` requires reconstructing the entire not
 
 **How to construct the patch:**
 - `oldString`: Use the closing triple-backtick line of the tasks block plus the text that immediately follows it (enough to be unique). For example, if nothing follows the tasks block yet, use just the closing backticks. If there are already entries, use the closing backticks and the first entry's heading.
-- `newString`: The same `oldString` text, but with the new session entry inserted between the closing backticks and whatever followed them. Leave exactly one blank line between the closing backticks and the new entry, and one blank line after the entry.
+- `newString`: The same `oldString` text, but with the new session entry inserted between the closing backticks and whatever followed them. Leave a single blank line between the closing backticks and the new entry, and a single blank line after the entry.
 
 Example patch for a note with no existing entries after the tasks block:
 ```
 oldString: "```\n\n## What was good today?"
-newString: "```\n\n### Brief descriptive title\n#ai-assisted/claude\n\nSummary paragraph.\n\n## What was good today?"
+newString: "```\n\n- Fixed auth bug by adding token refresh logic: middleware now refreshes expired tokens before forwarding requests #ai-assisted/claude #project-tag\n\n## What was good today?"
 ```
 
 Example patch for a note that already has entries:
 ```
-oldString: "```\n\n### Existing first entry title"
-newString: "```\n\n### New entry title\n#ai-assisted/claude\n\nSummary.\n\n### Existing first entry title"
+oldString: "```\n\n- Existing first entry"
+newString: "```\n\n- New entry summary: details if needed #ai-assisted/claude\n- Existing first entry"
 ```
 
 ### Session Entry Format
 
-Construct a brief, informative entry. Always include the `#ai-assisted/claude` tag. Add project tags from the config `tags` array, each prefixed with `#`. If no project config or no tags are present, only use `#ai-assisted/claude`.
+Construct a single bullet point entry. Always include the `#ai-assisted/claude` tag. Add project tags from the config `tags` array, each prefixed with `#`. If no project config or no tags are present, only use `#ai-assisted/claude`.
 
 ```markdown
-### Brief descriptive title
-#ai-assisted/claude #project-tag1 #project-tag2
-
-A freeform paragraph summarizing what happened — context, decisions, and the impact of the changes on the codebase or project.
+- Summary of primary work done: additional context or details if needed. Two sentences max #ai-assisted/claude #project-tag1 #project-tag2
 ```
 
 Guidelines:
-- The title should be a concise description of the primary work done (e.g., "Fix authentication bug in login flow") — no "Claude session" prefix
-- Tags go on their own line directly below the title
-- Write a freeform paragraph summarizing the session, focusing on the impact of the changes (what improved, what was unblocked, what behavior changed)
+- Use a single bullet point (`-`), no headings
+- Lead with the main accomplishment, optionally add details after a colon
+- Two sentences maximum — keep it scannable
+- Tags go inline at the end of the entry
 - Use Obsidian `[[wiki-links]]` to cross-reference related notes when relevant
 - Preserve ALL existing content in the daily note; only insert the new entry at the identified position
 
@@ -124,12 +122,10 @@ For each note path listed in `notes`:
 4. Use MCP obsidian `patch_note` to insert the following dated entry at the determined insertion point:
 
 ```markdown
-### YYYY-MM-DD — Brief descriptive title
-
-A freeform paragraph summarizing what happened. See [[🗓️ DailyNotes/YYYY/MM/YYYY-MM-DD]] for details.
+- YYYY-MM-DD — Summary of work done: additional details if needed. See [[🗓️ DailyNotes/YYYY/MM/YYYY-MM-DD]] #ai-assisted/claude
 ```
 
-   Replace `YYYY-MM-DD` with the `date` input value. The `[[...]]` link points to the daily note created in Phase 2. Do not add tags to project note entries.
+   Replace `YYYY-MM-DD` with the `date` input value. The `[[...]]` link points to the daily note created in Phase 2. Do not add project tags to project note entries.
 
    **Use `patch_note` the same way as in Phase 2**: find a unique anchor string at the insertion point, and replace it with itself plus the new entry. If appending at end of file, use `write_note` with `mode: append` instead. Never use `write_note` with `mode: overwrite`.
 
