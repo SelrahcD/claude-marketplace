@@ -1,15 +1,14 @@
 ---
 name: improve
-description: Continuous improvement feedback loop that captures observations during work (/note), analyzes root causes with 5 whys (/review), and implements durable improvements via the claude-code-optimizer (/retro). Triggers on retrospective, retro, improvement, feedback loop, root cause, 5 whys, observation, friction.
+description: Continuous improvement flywheel that captures observations during work (/improve-capture) and analyzes, researches, and implements durable improvements (/improve). Triggers on retrospective, retro, improvement, feedback loop, flywheel, root cause, 5 whys, observation, friction.
 ---
 
-# Continuous Improvement Loop
+# Continuous Improvement Flywheel
 
-Every friction moment is an improvement opportunity. This skill powers a three-phase feedback loop:
+Every friction moment is an improvement opportunity. This skill powers a two-phase feedback loop:
 
-1. **Capture** (`/note`) — Log observations during work. Quick, low-friction.
-2. **Review** (`/review`) — Scan the conversation for unlogged issues with 5 whys root cause analysis.
-3. **Retrospective** (`/retro`) — Process all pending observations, delegate to `claude-code-optimizer` to find the best solution, then implement immediately.
+1. **Capture** (`/improve-capture`) — Log observations during work. Quick, low-friction.
+2. **Improve** (`/improve`) — Scan the conversation for unlogged issues with 5 whys root cause analysis, process all pending observations, delegate to `claude-code-optimizer` to find the best solution, then implement immediately.
 
 The output isn't a document. It's **working improvements** to skills, commands, CLAUDE.md, AGENTS.md, hooks, linter rules, etc.
 
@@ -31,8 +30,8 @@ Each observation in `observations.md` follows this template:
 - **Project:** project-name
 - **Context:** What was happening when this was observed
 - **Details:** The observation itself
-- **Root cause:** (filled by /review, empty for /note captures)
-- **Resolution:** (filled by /retro when addressed)
+- **Root cause:** (filled by /improve analysis phase, empty for /improve-capture)
+- **Resolution:** (filled by /improve when addressed)
 ```
 
 ## Log Entry Format
@@ -51,7 +50,7 @@ Each entry in `log.md` follows this template:
 
 ## Proactive Suggestions
 
-During normal work (not just during `/note`), you may suggest capturing an observation when you spot clear failures:
+During normal work (not just during `/improve-capture`), you may suggest capturing an observation when you spot clear failures:
 
 - Failed commands (non-zero exit codes)
 - Multiple search attempts for the same thing

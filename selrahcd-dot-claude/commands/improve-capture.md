@@ -1,6 +1,6 @@
 ---
-name: note
-description: Capture an observation for later retrospective review
+name: improve-capture
+description: Capture an observation for the improvement flywheel
 ---
 Read the `improve` skill for the observation format.
 
@@ -14,7 +14,7 @@ Append a new observation to `~/.claude/retro/observations.md` using the observat
 - **Project:** infer from the current working directory name
 - **Context:** infer from the current conversation — what was happening when this was noted
 - **Details:** `$ARGUMENTS` as the full observation text
-- **Root cause:** leave empty (that's for `/review`)
-- **Resolution:** leave empty (that's for `/retro`)
+- **Root cause:** leave empty (that's for `/improve`)
+- **Resolution:** leave empty (that's for `/improve`)
 
 Respond only: "Noted."

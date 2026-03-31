@@ -1,10 +1,10 @@
-# Retrospective Process
+# Improvement Process
 
-This is the orchestration flow for `/retro`. Follow these steps in order.
+This is the orchestration flow for the improvement phase of `/improve`. Follow these steps in order.
 
 ## Step 1: Load Observations
 
-Read pending observations from `~/.claude/retro/observations.md`. Filter to entries with `**Status:** pending`. If none found, tell the user: "No pending observations. Use `/note` to capture observations or `/review` to scan the current conversation."
+Read pending observations from `~/.claude/retro/observations.md`. Filter to entries with `**Status:** pending`. If none found, tell the user: "No pending observations. Use `/improve-capture` to capture observations during work."
 
 ## Step 2: Present One at a Time
 
