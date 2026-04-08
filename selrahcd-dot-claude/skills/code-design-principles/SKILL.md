@@ -146,3 +146,27 @@ description: Knowledge base of code design principles covering CQS, Hexagonal Ar
 - Ask-then-decide: `if (order.getStatus() === "paid") { order.setStatus("shipped") }`. Instead: `order.ship()` which internally checks preconditions and transitions state.
 - A god class `ApplicationController` with 40 methods spanning user management, billing, and reporting. Split into focused classes aligned with bounded contexts.
 - Exposing internals: `order.getItems().push(newItem)` allows external code to mutate the order's item list. Provide `order.addItem(newItem)` which enforces invariants.
+
+## 8. Early Returns
+
+### Rules
+
+- Use early returns (guard clauses) to handle edge cases and preconditions at the top of a method. Exit as soon as possible rather than wrapping the main logic in a conditional.
+- Prefer flat code over nested code. Each level of nesting increases cognitive load. Early returns eliminate `else` branches and reduce indentation.
+- One return reason per guard clause. Each early return should check one condition and communicate one reason for exiting.
+
+### Violation examples
+
+- Deeply nested conditionals instead of guards:
+  ```
+  if (order !== null) {
+    if (order.isPaid()) {
+      if (order.hasItems()) {
+        // actual logic
+      }
+    }
+  }
+  ```
+  Use early returns: `if (order === null) return;` then `if (!order.isPaid()) return;` then `if (!order.hasItems()) return;` followed by the main logic at the top level.
+- An `if/else` where the `if` branch is the entire method body and the `else` returns or throws. Invert the condition and return early, then write the main logic without indentation.
+- A method that assigns a result variable inside nested branches and returns it at the end. Return directly from each branch instead.
