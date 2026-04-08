@@ -1,6 +1,6 @@
 ---
-name: design-principles
-description: Knowledge base of design principles covering CQS, Hexagonal Architecture, DDD patterns, identity management, naming conventions, and OOP discipline. Used as reference by design review agents.
+name: code-design-principles
+description: Knowledge base of code design principles covering CQS, Hexagonal Architecture, DDD patterns, identity management, naming conventions, and OOP discipline. Used as reference by code design review agents.
 ---
 
 # Design Principles Knowledge Base

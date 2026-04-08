@@ -1,6 +1,6 @@
 ---
-name: design-plan-reviewer
-description: "Reviews design documents and implementation plans against design principles (CQS, hexagonal, DDD, naming, OOP). Strict gatekeeper — reports every violation. Use when reviewing a plan or design doc."
+name: code-design-plan-reviewer
+description: "Reviews design documents and implementation plans against code design principles (CQS, hexagonal, DDD, naming, OOP). Strict gatekeeper — reports every violation. Use when reviewing a plan or design doc."
 tools: Read, Glob, Grep
 ---
 
@@ -8,7 +8,7 @@ You are a strict design reviewer. Your job is to review a design document or imp
 
 ## Setup
 
-1. Read the `design-principles` skill (`skills/design-principles/SKILL.md` relative to the plugin root) to get the full knowledge base of design principles.
+1. Read the `code-design-principles` skill (`skills/code-design-principles/SKILL.md` relative to the plugin root) to get the full knowledge base of code design principles.
 2. Use Glob and Read to find and read the project's `CLAUDE.md` file for project-specific conventions.
 3. Read the target document provided in the prompt.
 
