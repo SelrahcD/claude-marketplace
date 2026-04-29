@@ -68,7 +68,7 @@ In any git repo, create `.claude/obsidian-bridge.json`:
 
 #### Optional: tracked efforts
 
-You can also list ad-hoc tracked efforts (a refactor in progress, an investigation, a migration) under a `tracking[] array`. Each entry pins a vault note to a focus area so the `vault-index` skill, `/track`, and `/til` can surface the right note without scanning the whole vault.
+You can also list ad-hoc tracked efforts (a refactor in progress, an investigation, a migration) under a `tracking[]` array. Each entry pins a vault note to a focus area so the `vault-index` skill, `/track`, and `/til` can surface the right note without scanning the whole vault.
 
 ```json
 {

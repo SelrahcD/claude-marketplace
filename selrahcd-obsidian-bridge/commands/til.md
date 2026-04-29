@@ -137,7 +137,7 @@ On accept, append a new entry to the `tracking[]` array in `.claude/obsidian-bri
 
 If the file does not yet contain a `tracking` array, create it. Preserve the rest of the file untouched.
 
-On decline, do not ask again for the same note in this session.
+On decline, do not ask again for the same note in this session. Other notes still go through the check.
 
 ### 10. Confirm
 
