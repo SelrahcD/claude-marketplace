@@ -66,6 +66,34 @@ In any git repo, create `.claude/obsidian-bridge.json`:
 - `tags`: applied as #tags to each entry (without # prefix)
 - `notes`: vault-relative paths to project notes to update
 
+#### Optional: tracked efforts
+
+You can also list ad-hoc tracked efforts (a refactor in progress, an investigation, a migration) under a `tracking[] array`. Each entry pins a vault note to a focus area so the `vault-index` skill, `/track`, and `/til` can surface the right note without scanning the whole vault.
+
+```json
+{
+  "project": "My Project",
+  "tags": ["my-project"],
+  "notes": ["🦺 Projects/My Project.md"],
+  "tracking": [
+    {
+      "label": "auth-refactor",
+      "description": "Migration of auth middleware to new session token format",
+      "notes": ["🦺 Projects/Auth Refactoring.md"],
+      "tags": ["auth-refactor"]
+    }
+  ]
+}
+```
+
+Per tracking entry:
+- `label`: kebab-case identifier, unique within the file
+- `description`: one-sentence explanation of the effort
+- `notes`: vault-relative paths
+- `tags`: optional, falls back to top-level `tags` when absent
+
+You don't have to write `tracking` entries by hand. The plugin will offer to register a new tracked entry whenever it writes a note that looks like it documents an ongoing effort.
+
 ## Daily note format
 
 The agent inserts under the "What did I do?" section:
@@ -78,6 +106,14 @@ A freeform paragraph summarizing the session.
 
 - Key details with [[wiki-links]]
 ```
+
+## Skills
+
+### `vault-index`
+
+Triggers when you work with the Obsidian vault via MCP, or when you mention a tracked effort. It reads `.claude/obsidian-bridge.json`, surfaces the tracked notes as candidate destinations before writing, and offers to register new long-lived notes in the index after they're written.
+
+The `track` and `til` commands embed the same logic inline so they remain self-contained when invoked explicitly.
 
 ## Environment variables
 
