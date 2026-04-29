@@ -51,6 +51,24 @@ Ensure the `.claude/` directory exists at the repo root (create it if needed). W
 }
 ```
 
+The schema also supports an optional `tracking[]` array for ad-hoc tracked efforts (refactors, migrations, investigations) that the agent should remember alongside the project. Do **not** prompt for tracking entries during init — they get added later through `/track`, `/til`, or organic Obsidian MCP calls. For reference, a fully populated config looks like:
+
+```json
+{
+  "project": "<project name>",
+  "tags": ["<tag1>"],
+  "notes": ["<path/to/note.md>"],
+  "tracking": [
+    {
+      "label": "<kebab-case-label>",
+      "description": "<one-sentence description>",
+      "notes": ["<vault-relative path>"],
+      "tags": ["<optional-override-tag>"]
+    }
+  ]
+}
+```
+
 ### 7. Confirm
 
 Show the user what was written and where (`.claude/obsidian-bridge.json`). Remind them that this file tells the obsidian-bridge hook how to log Claude sessions for this project.
