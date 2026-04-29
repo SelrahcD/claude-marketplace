@@ -38,7 +38,7 @@ Use the Obsidian MCP `list_directory` tool to check what folders exist in the va
 - **Project-specific learnings** → near the project note if one is referenced in `.claude/obsidian-bridge.json`
 - **General insights** → vault root
 
-Default to vault root if unsure. Present the suggested path (folder + filename) to the user and ask them to confirm or provide a different location. Use the topic phrase as the filename with words capitalized.
+Default to `📝 Notes/` if no clear directory matches the topic. Present the suggested path (folder + filename) to the user and ask them to confirm or provide a different location. Use the topic phrase as the filename with words capitalized.
 
 Example: "I'll create the note at **🧠 Ressources/Development/Scrutiny Mode - Review-Friendly Refactoring Pattern.md**. Good location, or would you prefer somewhere else?"
 
