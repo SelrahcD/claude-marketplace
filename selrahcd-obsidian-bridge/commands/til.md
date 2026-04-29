@@ -12,7 +12,15 @@ Capture something you just learned as a TIL entry in today's daily note. Quick f
 
 ### 1. Load project config
 
-Check if `.claude/obsidian-bridge.json` exists at the git repo root (use `git rev-parse --show-toplevel`). If found, read it to get the project name and tags. These will be used later for tagging and context. If not found, continue without project context.
+Check if `.claude/obsidian-bridge.json` exists at the git repo root (use `git rev-parse --show-toplevel`). If found, read it to get:
+
+- `project` and top-level `tags` — used for tagging and context later.
+- `notes` — the always-on project notes.
+- `tracking[]` (optional) — additional ad-hoc tracked entries. Each has `label`, `description`, `notes`, and an optional `tags` (falls back to top-level `tags`).
+
+Treat the top-level project (`project` / `tags` / `notes`) as the always-on default entry. For the matching logic in step 5, the top-level entry uses its `project` name and top-level `tags` as the match target in place of `description`/`label`.
+
+Keep the loaded entries (project + each `tracking[]` entry) available to subsequent steps. If the config file is not found, continue without project context.
 
 ### 2. Detect topic
 
@@ -43,9 +51,17 @@ Example: "This seems like a quick fact — I'd suggest **inline bullets**. Or wo
 
 ### 5. Propose note location (standalone only)
 
-If the user chose **standalone note** format, propose a location before drafting:
+If the user chose **standalone note** format, propose a location before drafting.
 
-Use the Obsidian MCP `list_directory` tool to check what folders exist in the vault. Suggest a location based on the topic:
+**First**, scan the entries you loaded in step 1 (the always-on project entry plus any `tracking[]` entries). For each entry, check whether its match target semantically matches the topic (`description` and `label` for tracking entries; `project` name and top-level `tags` for the always-on entry). Use your judgment — this is not a substring check.
+
+If any entry matches, offer that entry's note path as the **first option**:
+
+> "This looks related to the tracked entry **<label or project name>** (`<note path>`). Append to that note, or create a new one?"
+
+If multiple entries match, list them all and let the user pick. If the user picks a tracked note, skip the location-suggestion logic below and use that path as the destination. Note whether the final destination is an existing tracked entry or a new note — step 9 uses this.
+
+Otherwise, use the Obsidian MCP `list_directory` tool to check what folders exist in the vault. Suggest a location based on the topic:
 
 - **Technical concepts** (language features, libraries, patterns) → a subfolder under `🧠 Ressources/`
 - **Project-specific learnings** → near the project note if one is referenced in `.claude/obsidian-bridge.json`
@@ -62,7 +78,7 @@ Skip this step for inline format.
 **If standalone note format:** Draft two things:
 1. The full standalone note with:
    - A `# Title` heading
-   - Tags from the project config (formatted as `#tag` inline below the title)
+   - Tags formatted as `#tag` inline below the title. Tag source: if the destination is a tracked entry, use that entry's `tags` (falling back to top-level `tags` when the entry omits its own); otherwise use the top-level `tags`.
    - A clear explanation of the learning
    - Examples or code snippets if relevant
    - `[[wiki-links]]` to related notes
@@ -91,9 +107,42 @@ Entry format for standalone link:
 - [[Note Title]] — brief one-line summary
 ```
 
-### 9. Confirm
+### 9. Offer to register in tracking (standalone only)
+
+If the user chose **inline format** (no standalone note was created), skip this step.
+
+If the destination of the standalone note (chosen in step 5) was an **already-tracked entry**, skip this step.
+
+Otherwise, apply the registration heuristic. Prompt "Add this to tracking?" only when **at least one** of these signals is present:
+
+- The note documents an **ongoing effort** — refactor, migration, investigation, multi-session debugging.
+- The note is structured to be **appended over time** — has a "Progress", "Decisions", "Log", or similar section.
+- The user explicitly said **"track"**, **"follow up"**, **"keep notes on"**, or a close variant.
+- The user invoked `/til` for a topic that names an ongoing effort rather than a one-off fact.
+
+If at least one signal matches, prompt with a single y/N including a suggested `label` (kebab-cased from the topic):
+
+> "This note looks like it could be revisited later. Add to `.claude/obsidian-bridge.json` tracking as **`<suggested-label>`**? (y/N)"
+
+On accept, append a new entry to the `tracking[]` array in `.claude/obsidian-bridge.json`:
+
+```json
+{
+  "label": "<suggested-label>",
+  "description": "<one-sentence description of the effort>",
+  "notes": ["<path that was just written>"],
+  "tags": ["<suggested-label>"]
+}
+```
+
+If the file does not yet contain a `tracking` array, create it. Preserve the rest of the file untouched.
+
+On decline, do not ask again for the same note in this session.
+
+### 10. Confirm
 
 Tell the user:
 - What was added to the TIL section (inline bullets or a wiki-link)
 - The standalone note path if one was created
 - If the daily note update was skipped and why
+- Whether a tracking entry was registered (and under which label)
