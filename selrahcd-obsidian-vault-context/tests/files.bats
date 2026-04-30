@@ -179,3 +179,28 @@ teardown() { teardown_tmp_root; }
   jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
   jq -e '.files[0].path == "x.md"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
 }
+
+@test "remove file: removes the matching entry, leaves others" {
+  write_config "$TMP_ROOT/A" '{"files": [
+    {"path": "keep.md", "description": "K", "labels": []},
+    {"path": "drop.md", "description": "D", "labels": []}
+  ]}'
+  run_cli "$TMP_ROOT/A" remove file "drop.md" --scope current-directory
+  [ "$status" -eq 0 ]
+  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  jq -e '.files[0].path == "keep.md"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
+
+@test "remove file: errors when target file does not exist" {
+  mkdir -p "$TMP_ROOT/A"
+  run_cli "$TMP_ROOT/A" remove file "x.md" --scope current-directory
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"not found"* ]] || [[ "$output" == *"does not exist"* ]]
+}
+
+@test "remove file: errors when entry not found in existing config" {
+  write_config "$TMP_ROOT/A" '{"files": [{"path": "other.md", "description": "O", "labels": []}]}'
+  run_cli "$TMP_ROOT/A" remove file "missing.md" --scope current-directory
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"missing.md"* ]]
+}

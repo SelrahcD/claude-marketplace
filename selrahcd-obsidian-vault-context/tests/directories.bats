@@ -43,3 +43,13 @@ teardown() { teardown_tmp_root; }
   [ "$status" -eq 0 ]
   jq -e '.directories[0].description == "New"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
 }
+
+@test "remove directory: removes the matching entry" {
+  write_config "$TMP_ROOT/A" '{"directories": [
+    {"path": "keep/", "description": "K", "labels": []},
+    {"path": "drop/", "description": "D", "labels": []}
+  ]}'
+  run_cli "$TMP_ROOT/A" remove directory "drop/" --scope current-directory
+  [ "$status" -eq 0 ]
+  jq -e '.directories | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}

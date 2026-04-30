@@ -341,6 +341,53 @@ EOF
       exit 1
     fi
     ;;
+  remove)
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: remove: missing kind\n' >&2; exit 2; }
+    kind="$1"; shift
+    case "$kind" in
+      file) collection="files" ;;
+      directory) collection="directories" ;;
+      *) printf 'obsidian-context: remove: unknown kind %q\n' "$kind" >&2; exit 2 ;;
+    esac
+
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: remove %s: missing <vault-path>\n' "$kind" >&2; exit 2; }
+    vault_path="$1"; shift
+
+    scope="local"
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --scope)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: remove %s: --scope requires a value\n' "$kind" >&2
+            exit 2
+          fi
+          scope="$2"; shift 2 ;;
+        --help|-h) printf 'Usage: obsidian-context remove %s <vault-path> [--scope ...]\n' "$kind"; exit 0 ;;
+        *) printf 'obsidian-context: remove %s: unexpected arg %q\n' "$kind" "$1" >&2; exit 2 ;;
+      esac
+    done
+
+    target=$(scope_resolve "$scope" "$EFFECTIVE_CWD") || exit 1
+
+    if [[ ! -f "$target" ]]; then
+      printf 'obsidian-context: remove %s: target file does not exist: %s\n' "$kind" "$target" >&2
+      exit 1
+    fi
+
+    schema_validate_file "$target" || exit 1
+
+    if ! jq -e --arg c "$collection" --arg vp "$vault_path" \
+        '.[$c] // [] | map(.path == $vp) | any' "$target" >/dev/null; then
+      printf 'obsidian-context: remove %s: entry %q not found in %s\n' "$kind" "$vault_path" "$target" >&2
+      exit 1
+    fi
+
+    write_atomic_json "$target" '
+      .[$c] = ((.[$c] // []) | map(select(.path != $vp)))
+    ' \
+      --arg c "$collection" \
+      --arg vp "$vault_path"
+    ;;
   *)
     printf 'obsidian-context: subcommand %q not implemented yet\n' "$cmd" >&2
     exit 2
