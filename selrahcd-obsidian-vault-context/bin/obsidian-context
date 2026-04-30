@@ -10,6 +10,7 @@ source "$LIB_DIR/schema.sh"
 source "$LIB_DIR/merge.sh"
 source "$LIB_DIR/output.sh"
 source "$LIB_DIR/scope.sh"
+source "$LIB_DIR/write.sh"
 
 print_help() {
   cat <<'EOF'
@@ -229,6 +230,115 @@ EOF
       output_labels_json "$filtered"
     else
       output_labels_human "$filtered" "$show_source"
+    fi
+    ;;
+  add)
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: add: missing kind (file|directory)\n' >&2; exit 2; }
+    kind="$1"; shift
+    case "$kind" in
+      file|directory)
+        # Map to plural collection name in the JSON.
+        if [[ "$kind" == "file" ]]; then collection="files"; else collection="directories"; fi
+        ;;
+      *)
+        printf 'obsidian-context: add: unknown kind %q (expected file or directory)\n' "$kind" >&2
+        exit 2
+        ;;
+    esac
+
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: add %s: missing <vault-path>\n' "$kind" >&2; exit 2; }
+    vault_path="$1"; shift
+
+    description=""
+    labels=()
+    scope="local"
+    force=0
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --description)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: add %s: --description requires a value\n' "$kind" >&2
+            exit 2
+          fi
+          description="$2"; shift 2 ;;
+        --label)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: add %s: --label requires a value\n' "$kind" >&2
+            exit 2
+          fi
+          labels+=("$2"); shift 2 ;;
+        --scope)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: add %s: --scope requires a value\n' "$kind" >&2
+            exit 2
+          fi
+          scope="$2"; shift 2 ;;
+        --force) force=1; shift ;;
+        --help|-h)
+          cat <<EOF
+Usage: obsidian-context add $kind <vault-path>
+                          --description <text>
+                          [--label <name>]...
+                          [--scope local|current-directory|global|<path>]
+                          [--force]
+EOF
+          exit 0
+          ;;
+        *) printf 'obsidian-context: add %s: unexpected arg %q\n' "$kind" "$1" >&2; exit 2 ;;
+      esac
+    done
+
+    if [[ -z "$description" ]]; then
+      printf 'obsidian-context: add %s: --description is required\n' "$kind" >&2
+      exit 2
+    fi
+
+    target=$(scope_resolve "$scope" "$EFFECTIVE_CWD") || exit 1
+
+    if [[ -f "$target" && -s "$target" ]]; then
+      schema_validate_file "$target" || exit 1
+    fi
+
+    labels_json="[]"
+    if [[ ${#labels[@]} -gt 0 ]]; then
+      labels_json=$(printf '%s\n' "${labels[@]}" | jq -R . | jq -s .)
+    fi
+
+    # Note: must use `if !` (not `cmd; rc=$?`) because `set -e` would otherwise
+    # exit before we can inspect the failure mode.
+    if ! write_atomic_json "$target" '
+      def empty_doc: {files: [], directories: [], labels: {}};
+      (if . == null then empty_doc else . end) as $doc
+      | ($doc[$collection] // []) as $arr
+      | ($arr | map(.path == $vp) | any) as $exists
+      | ($arr | map(select(.path == $vp))[0]) as $existing
+      | if $exists then
+          if $force == 1 then
+            $doc | .[$collection] = (
+              ($arr | map(select(.path != $vp)))
+              + [{ path: $vp, description: $desc, labels: $labels }]
+            )
+          elif ($existing.description == $desc and (($existing.labels // []) == $labels)) then
+            $doc
+          else
+            error("CONFLICT")
+          end
+        else
+          $doc | .[$collection] = $arr + [{ path: $vp, description: $desc, labels: $labels }]
+        end
+      ' \
+      --arg collection "$collection" \
+      --arg vp "$vault_path" \
+      --arg desc "$description" \
+      --argjson labels "$labels_json" \
+      --argjson force "$force" ; then
+      if [[ -f "$target" ]] && jq -e --arg c "$collection" --arg vp "$vault_path" \
+          '.[$c] // [] | map(.path == $vp) | any' "$target" >/dev/null; then
+        printf 'obsidian-context: add %s: entry %q already exists with different fields; use --force to overwrite\n' \
+          "$kind" "$vault_path" >&2
+      fi
+      exit 1
     fi
     ;;
   *)

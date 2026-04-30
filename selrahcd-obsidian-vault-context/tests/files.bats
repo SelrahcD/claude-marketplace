@@ -121,3 +121,52 @@ teardown() { teardown_tmp_root; }
   [ "$status" -eq 2 ]
   [[ "$output" == *"--search requires a value"* ]]
 }
+
+@test "add file: creates file with single entry when none exists" {
+  mkdir -p "$TMP_ROOT/A"
+  run_cli "$TMP_ROOT/A" add file "Notes/X.md" --description "X note" --label foo --scope current-directory
+  [ "$status" -eq 0 ]
+  [ -f "$TMP_ROOT/A/.obsidian-vault-context.json" ]
+  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  jq -e '.files[0].path == "Notes/X.md"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  jq -e '.files[0].description == "X note"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  jq -e '.files[0].labels == ["foo"]' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
+
+@test "add file: appends to existing files[]" {
+  write_config "$TMP_ROOT/A" '{"files": [{"path": "old.md", "description": "Old", "labels": []}]}'
+  run_cli "$TMP_ROOT/A" add file "new.md" --description "New" --scope current-directory
+  [ "$status" -eq 0 ]
+  jq -e '.files | length == 2' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
+
+@test "add file: duplicate path with same fields is a no-op (idempotent)" {
+  write_config "$TMP_ROOT/A" '{"files": [{"path": "x.md", "description": "X", "labels": ["a"]}]}'
+  run_cli "$TMP_ROOT/A" add file "x.md" --description "X" --label a --scope current-directory
+  [ "$status" -eq 0 ]
+  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
+
+@test "add file: duplicate path with different description fails without --force" {
+  write_config "$TMP_ROOT/A" '{"files": [{"path": "x.md", "description": "Old", "labels": []}]}'
+  run_cli "$TMP_ROOT/A" add file "x.md" --description "New" --scope current-directory
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"--force"* ]] || [[ "$output" == *"already exists"* ]]
+  jq -e '.files[0].description == "Old"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
+
+@test "add file --force: overwrites existing entry" {
+  write_config "$TMP_ROOT/A" '{"files": [{"path": "x.md", "description": "Old", "labels": []}]}'
+  run_cli "$TMP_ROOT/A" add file "x.md" --description "New" --label fresh --scope current-directory --force
+  [ "$status" -eq 0 ]
+  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  jq -e '.files[0].description == "New"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  jq -e '.files[0].labels == ["fresh"]' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
+
+@test "add file: errors without --description" {
+  mkdir -p "$TMP_ROOT/A"
+  run_cli "$TMP_ROOT/A" add file "x.md" --scope current-directory
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"--description"* ]]
+}
