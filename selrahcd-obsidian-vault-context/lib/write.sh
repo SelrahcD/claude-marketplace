@@ -14,6 +14,10 @@ write_atomic_json() {
   if [[ -f "$target" ]]; then
     mtime_before=$(stat -f '%m' "$target" 2>/dev/null || stat -c '%Y' "$target")
     input=$(cat "$target")
+    if [[ -z "$input" ]]; then
+      # 0-byte existing file: treat as null, like missing file.
+      input="null"
+    fi
   else
     mtime_before=""
     input="null"

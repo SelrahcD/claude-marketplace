@@ -170,3 +170,12 @@ teardown() { teardown_tmp_root; }
   [ "$status" -ne 0 ]
   [[ "$output" == *"--description"* ]]
 }
+
+@test "add file: works correctly when target file is 0 bytes" {
+  mkdir -p "$TMP_ROOT/A"
+  : > "$TMP_ROOT/A/.obsidian-vault-context.json"
+  run_cli "$TMP_ROOT/A" add file "x.md" --description "X" --scope current-directory
+  [ "$status" -eq 0 ]
+  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  jq -e '.files[0].path == "x.md"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
