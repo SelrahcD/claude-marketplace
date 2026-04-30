@@ -9,6 +9,7 @@ source "$LIB_DIR/traversal.sh"
 source "$LIB_DIR/schema.sh"
 source "$LIB_DIR/merge.sh"
 source "$LIB_DIR/output.sh"
+source "$LIB_DIR/scope.sh"
 
 print_help() {
   cat <<'EOF'
