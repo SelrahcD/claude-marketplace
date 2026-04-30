@@ -1,0 +1,13 @@
+{
+  "name": "obsidian-vault-context",
+  "version": "1.0.0",
+  "description": "Directory-aware index of Obsidian vault notes and directories, queryable via the obsidian-context CLI",
+  "author": {
+    "name": "Selrahcd",
+    "url": "https://github.com/SelrahcD"
+  },
+  "repository": "https://github.com/SelrahcD/claude-marketplace",
+  "license": "MIT",
+  "keywords": ["obsidian", "vault", "context", "cli"],
+  "skills": "./skills/"
+}

@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+print_help() {
+  cat <<'EOF'
+obsidian-context — directory-aware index of Obsidian vault notes
+
+Usage: obsidian-context [global flags] <subcommand> [args]
+
+Read subcommands:
+  list      List file/directory entries (filterable)
+  labels    List known labels with descriptions
+  where     Show which config files were loaded
+
+Write subcommands:
+  add file <path>          Add a file entry
+  add directory <path>     Add a directory entry
+  remove file <path>       Remove a file entry
+  remove directory <path>  Remove a directory entry
+  label set <name> <desc>  Define or refine a label
+  label remove <name>      Remove a label
+
+Global flags:
+  --json          Structured output instead of human format
+  --cwd <path>    Pretend CLI was invoked from <path>
+  --help          Print this help
+
+Run 'obsidian-context <subcommand> --help' for subcommand details.
+EOF
+}
+
+if [[ $# -eq 0 || "$1" == "--help" || "$1" == "-h" ]]; then
+  print_help
+  exit 0
+fi
+
+echo "obsidian-context: subcommand '$1' not implemented yet" >&2
+exit 2
