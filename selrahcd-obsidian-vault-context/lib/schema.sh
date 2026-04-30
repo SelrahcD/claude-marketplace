@@ -5,7 +5,8 @@
 #     Exit 0 on valid; exit 1 + stderr message on malformed JSON or malformed entries.
 #     Emits soft warnings to stderr for unknown top-level keys.
 
-# Recognized top-level keys owned by this plugin.
+# Recognized top-level keys owned by this plugin (single source of truth —
+# extend this list when new top-level keys are introduced).
 SCHEMA_KNOWN_TOP_LEVEL=(files directories labels)
 
 schema_validate_file() {
@@ -19,7 +20,7 @@ schema_validate_file() {
 
   # Soft warn for unknown top-level keys.
   local known_filter
-  known_filter='["files","directories","labels"]'
+  known_filter=$(printf '%s\n' "${SCHEMA_KNOWN_TOP_LEVEL[@]}" | jq -R . | jq -sc .)
   local unknown
   unknown=$(jq -r --argjson known "$known_filter" \
     '(keys // []) - $known | .[]' "$file")
