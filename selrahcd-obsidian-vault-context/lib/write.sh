@@ -6,13 +6,24 @@
 #     given program, writes to a tmp file, checks mtime didn't change, then renames.
 #     Conflict (mtime changed) -> exit 1 with stderr message.
 
+# Print the mtime of <file> as a Unix timestamp.
+# stat(1) syntax differs between BSD (macOS) and GNU (Linux); detect once per call.
+_write_mtime() {
+  local file="$1"
+  if [[ "$(uname)" == "Darwin" ]]; then
+    stat -f '%m' "$file"
+  else
+    stat -c '%Y' "$file"
+  fi
+}
+
 write_atomic_json() {
   local target="$1"; shift
   local jq_program="$1"; shift
 
   local input mtime_before mtime_after
   if [[ -f "$target" ]]; then
-    mtime_before=$(stat -f '%m' "$target" 2>/dev/null || stat -c '%Y' "$target")
+    mtime_before=$(_write_mtime "$target")
     input=$(cat "$target")
     if [[ -z "$input" ]]; then
       # 0-byte existing file: treat as null, like missing file.
@@ -31,7 +42,7 @@ write_atomic_json() {
   fi
 
   if [[ -f "$target" ]]; then
-    mtime_after=$(stat -f '%m' "$target" 2>/dev/null || stat -c '%Y' "$target")
+    mtime_after=$(_write_mtime "$target")
     if [[ "$mtime_before" != "$mtime_after" ]]; then
       rm -f "$tmp"
       printf 'obsidian-context: %s: file changed on disk; re-run\n' "$target" >&2
