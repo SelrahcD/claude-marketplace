@@ -30,7 +30,7 @@
       "name": "obsidian-vault-context",
       "source": "./selrahcd-obsidian-vault-context",
       "description": "Directory-aware index of Obsidian vault notes and directories, queryable via the obsidian-context CLI",
-      "version": "1.0.0"
+      "version": "1.1.0"
     }
   ]
 }
