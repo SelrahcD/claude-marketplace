@@ -1,9 +1,10 @@
 # Output formatters for entries and labels.
 #
 # Functions:
-#   output_entries_human <merged-json>
+#   output_entries_human <merged-json> <show-source>
 #     Reads the merged JSON, prints one line per entry:
 #       <path>  [<labels>]  <description>
+#     When show-source = "1", also prints:
 #       from: <source>
 #     Both files and directories are printed.
 #
@@ -17,11 +18,20 @@
 
 output_entries_human() {
   local merged="$1"
-  jq -r '
-    ((.files // []) + (.directories // []))
-    | .[]
-    | "\(.path)  [\((.labels // []) | join(", "))]  \(.description)\n  from: \(.source)"
-  ' <<<"$merged"
+  local show_source="$2"
+  if [[ "$show_source" == "1" ]]; then
+    jq -r '
+      ((.files // []) + (.directories // []))
+      | .[]
+      | "\(.path)  [\((.labels // []) | join(", "))]  \(.description)\n  from: \(.source)"
+    ' <<<"$merged"
+  else
+    jq -r '
+      ((.files // []) + (.directories // []))
+      | .[]
+      | "\(.path)  [\((.labels // []) | join(", "))]  \(.description)"
+    ' <<<"$merged"
+  fi
 }
 
 output_entries_json() {

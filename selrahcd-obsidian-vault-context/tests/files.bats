@@ -19,8 +19,7 @@ teardown() { teardown_tmp_root; }
   }'
   run_cli "$TMP_ROOT/A" list
   [ "$status" -eq 0 ]
-  expected="Notes/X.md  [foo]  X note
-  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  expected="Notes/X.md  [foo]  X note"
   [ "$output" = "$expected" ]
 }
 
@@ -35,9 +34,7 @@ teardown() { teardown_tmp_root; }
 
   [ "$status" -eq 0 ]
   expected="close.md  []  Close
-  from: $TMP_ROOT/A/B/.obsidian-vault-context.json
-far.md  []  Far
-  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+far.md  []  Far"
   [ "$output" = "$expected" ]
 }
 
@@ -47,8 +44,7 @@ far.md  []  Far
     "directories": [{"path": "d/", "description": "D", "labels": []}]
   }'
   run_cli "$TMP_ROOT/A" list --kind files
-  expected="f.md  []  F
-  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  expected="f.md  []  F"
   [ "$output" = "$expected" ]
 }
 
@@ -60,8 +56,7 @@ far.md  []  Far
     ]
   }'
   run_cli "$TMP_ROOT/A" list --label foo
-  expected="x.md  [foo]  X
-  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  expected="x.md  [foo]  X"
   [ "$output" = "$expected" ]
 }
 
@@ -73,8 +68,7 @@ far.md  []  Far
     ]
   }'
   run_cli "$TMP_ROOT/A" list --label foo --label bar
-  expected="both.md  [foo, bar]  B
-  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  expected="both.md  [foo, bar]  B"
   [ "$output" = "$expected" ]
 }
 
@@ -88,9 +82,7 @@ far.md  []  Far
   }'
   run_cli "$TMP_ROOT/A" list --label foo --label bar --any
   expected="foo.md  [foo]  F
-  from: $TMP_ROOT/A/.obsidian-vault-context.json
-bar.md  [bar]  B
-  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+bar.md  [bar]  B"
   [ "$output" = "$expected" ]
 }
 
@@ -104,9 +96,7 @@ bar.md  [bar]  B
   }'
   run_cli "$TMP_ROOT/A" list --search auth
   expected="Auth/refactor.md  []  Stuff
-  from: $TMP_ROOT/A/.obsidian-vault-context.json
-Other/x.md  []  About authentication
-  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+Other/x.md  []  About authentication"
   [ "$output" = "$expected" ]
 }
 
@@ -274,4 +264,15 @@ obsidian-context: add file: entry x.md already exists with different fields; use
   run_cli "$TMP_ROOT/A" remove file "missing.md" --scope current-directory
   [ "$status" -ne 0 ]
   [ "$output" = "obsidian-context: remove file: entry missing.md not found in $TMP_ROOT/A/.obsidian-vault-context.json" ]
+}
+
+@test "list --show-source: includes source line under each entry" {
+  write_config "$TMP_ROOT/A" '{
+    "files": [{"path": "f.md", "description": "F", "labels": []}]
+  }'
+  run_cli "$TMP_ROOT/A" list --show-source
+  [ "$status" -eq 0 ]
+  expected="f.md  []  F
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }

@@ -69,6 +69,7 @@ All top-level keys are optional. Unknown top-level keys produce a soft warning b
 obsidian-context list [--kind files|directories]
                       [--label <name>]... [--any]
                       [--search <term>]
+                      [--show-source]
                       [--json]
 
 obsidian-context labels [--search <term>]
@@ -78,7 +79,7 @@ obsidian-context labels [--search <term>]
 obsidian-context where [--json]
 ```
 
-`list` returns merged file and directory entries from every config encountered walking up from CWD plus the global config. Each entry shows its `source` (which config it came from). `--label` repeats are AND by default; `--any` switches to OR.
+`list` returns merged file and directory entries from every config encountered walking up from CWD plus the global config. `--label` repeats are AND by default; `--any` switches to OR. `--show-source` adds a `from: <path>` line under each entry showing which config it came from. Default human output omits it; JSON output always includes the `source` field.
 
 `labels` returns the merged label vocabulary — closest-wins on the description text. `--show-source` includes the path of the config whose description won.
 

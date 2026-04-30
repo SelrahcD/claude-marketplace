@@ -13,8 +13,7 @@ teardown() { teardown_tmp_root; }
   }'
   run_cli "$TMP_ROOT/A" list
   [ "$status" -eq 0 ]
-  expected="Projects/  [root]  All projects
-  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  expected="Projects/  [root]  All projects"
   [ "$output" = "$expected" ]
 }
 
@@ -24,8 +23,7 @@ teardown() { teardown_tmp_root; }
     "directories": [{"path": "d/", "description": "D", "labels": []}]
   }'
   run_cli "$TMP_ROOT/A" list --kind directories
-  expected="d/  []  D
-  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  expected="d/  []  D"
   [ "$output" = "$expected" ]
 }
 
@@ -63,6 +61,17 @@ teardown() { teardown_tmp_root; }
   ]
 }'
   [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
+}
+
+@test "list --show-source: includes source line under each directory entry" {
+  write_config "$TMP_ROOT/A" '{
+    "directories": [{"path": "Projects/", "description": "All projects", "labels": []}]
+  }'
+  run_cli "$TMP_ROOT/A" list --show-source
+  [ "$status" -eq 0 ]
+  expected="Projects/  []  All projects
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "remove directory: removes the matching entry" {
