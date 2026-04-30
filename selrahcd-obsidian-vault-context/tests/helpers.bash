@@ -1,8 +1,5 @@
 # Helpers for bats tests of obsidian-context.
 
-# Skip dependency checks (jq presence, bash version) during tests.
-export OBSIDIAN_CONTEXT_SKIP_DEP_CHECK=1
-
 # Resolve once: absolute path to the CLI under test.
 CLI_BIN="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/bin/obsidian-context"
 

@@ -1,17 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Dependency check (skip in test environments via OBSIDIAN_CONTEXT_SKIP_DEP_CHECK=1).
-if [[ "${OBSIDIAN_CONTEXT_SKIP_DEP_CHECK:-0}" != "1" ]]; then
-  if ! command -v jq >/dev/null 2>&1; then
-    printf 'obsidian-context: jq is required but not found on PATH (install with `brew install jq` or your distro package manager)\n' >&2
-    exit 127
-  fi
-
-  if [[ "${BASH_VERSINFO[0]:-0}" -lt 4 ]]; then
-    printf 'obsidian-context: bash >= 4 is required (current: %s). On macOS install via `brew install bash`, then ensure brew bash is first on PATH.\n' "${BASH_VERSION:-unknown}" >&2
-    exit 127
-  fi
+# Dependency check.
+if ! command -v jq >/dev/null 2>&1; then
+  printf 'obsidian-context: jq is required but not found on PATH (install with `brew install jq` or your distro package manager)\n' >&2
+  exit 127
 fi
 
 # Resolve the script's own directory so we can source siblings.
