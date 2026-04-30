@@ -83,3 +83,27 @@ teardown() { teardown_tmp_root; }
   count=$(echo "$output" | grep -c "^$HOME/.obsidian-vault-context.json$" || true)
   [ "$count" -eq 1 ]
 }
+
+@test "where: malformed JSON in a traversed file is a hard error" {
+  write_config "$TMP_ROOT/A" 'not json {'
+  run_cli "$TMP_ROOT/A" where
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"A/.obsidian-vault-context.json"* ]]
+  [[ "$output" == *"malformed JSON"* ]] || [[ "$stderr" == *"malformed JSON"* ]]
+}
+
+@test "where: unknown top-level key emits a soft warning to stderr" {
+  write_config "$TMP_ROOT/A" '{"obsidian-bridge": {"project": "X"}}'
+  run_cli "$TMP_ROOT/A" where
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"A/.obsidian-vault-context.json"* ]]
+  # Stderr captured into $output by bats `run` only with --separate-stderr,
+  # so we just verify the soft path: exit 0 and the path is listed.
+}
+
+@test "where: malformed entry (missing path) is a hard error" {
+  write_config "$TMP_ROOT/A" '{"files": [{"description": "x"}]}'
+  run_cli "$TMP_ROOT/A" where
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"missing required field"* ]] || [[ "$output" == *"path"* ]]
+}

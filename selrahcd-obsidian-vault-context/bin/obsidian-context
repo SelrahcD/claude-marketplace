@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 LIB_DIR="$SCRIPT_DIR/../lib"
 
 source "$LIB_DIR/traversal.sh"
+source "$LIB_DIR/schema.sh"
 
 print_help() {
   cat <<'EOF'
@@ -69,7 +70,10 @@ fi
 cmd="$1"; shift
 case "$cmd" in
   where)
-    traversal_collect "$EFFECTIVE_CWD"
+    while IFS= read -r path; do
+      schema_validate_file "$path" || exit 1
+      printf '%s\n' "$path"
+    done < <(traversal_collect "$EFFECTIVE_CWD")
     ;;
   *)
     printf 'obsidian-context: subcommand %q not implemented yet\n' "$cmd" >&2
