@@ -103,3 +103,21 @@ teardown() { teardown_tmp_root; }
   [[ "$output" == *"Other/x.md"* ]]
   [[ "$output" != *"Other/y.md"* ]]
 }
+
+@test "list --kind: errors with clear message when no value follows" {
+  run_cli "$TMP_ROOT/A" list --kind
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"--kind requires a value"* ]]
+}
+
+@test "list --label: errors with clear message when no value follows" {
+  run_cli "$TMP_ROOT/A" list --label
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"--label requires a value"* ]]
+}
+
+@test "list --search: errors with clear message when no value follows" {
+  run_cli "$TMP_ROOT/A" list --search
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"--search requires a value"* ]]
+}

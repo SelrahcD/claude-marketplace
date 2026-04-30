@@ -100,10 +100,25 @@ case "$cmd" in
     search=""
     while [[ $# -gt 0 ]]; do
       case "$1" in
-        --kind) kind="$2"; shift 2 ;;
-        --label) labels+=("$2"); shift 2 ;;
+        --kind)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: list: --kind requires a value\n' >&2
+            exit 2
+          fi
+          kind="$2"; shift 2 ;;
+        --label)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: list: --label requires a value\n' >&2
+            exit 2
+          fi
+          labels+=("$2"); shift 2 ;;
         --any) any=1; shift ;;
-        --search) search="$2"; shift 2 ;;
+        --search)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: list: --search requires a value\n' >&2
+            exit 2
+          fi
+          search="$2"; shift 2 ;;
         --help|-h)
           cat <<'EOF'
 Usage: obsidian-context list [--kind files|directories]
