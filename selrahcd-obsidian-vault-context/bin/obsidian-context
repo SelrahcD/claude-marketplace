@@ -187,6 +187,49 @@ EOF
       output_entries_human "$filtered"
     fi
     ;;
+  labels)
+    search=""
+    show_source=0
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --search)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: labels: --search requires a value\n' >&2
+            exit 2
+          fi
+          search="$2"; shift 2 ;;
+        --show-source) show_source=1; shift ;;
+        --help|-h)
+          cat <<'EOF'
+Usage: obsidian-context labels [--search <term>] [--show-source] [--json]
+EOF
+          exit 0
+          ;;
+        *) printf 'obsidian-context: labels: unexpected arg %q\n' "$1" >&2; exit 2 ;;
+      esac
+    done
+
+    merged=$(build_merged "$EFFECTIVE_CWD")
+
+    filtered=$(jq --arg search "$search" '
+      .labels // {}
+      | if $search == "" then .
+        else with_entries(
+          select(
+            (.key | ascii_downcase | contains($search | ascii_downcase))
+            or (.value.description | ascii_downcase | contains($search | ascii_downcase))
+          )
+        )
+        end
+      | { labels: . }
+    ' <<<"$merged")
+
+    if [[ "$JSON_OUTPUT" == "1" ]]; then
+      output_labels_json "$filtered"
+    else
+      output_labels_human "$filtered" "$show_source"
+    fi
+    ;;
   *)
     printf 'obsidian-context: subcommand %q not implemented yet\n' "$cmd" >&2
     exit 2
