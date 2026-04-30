@@ -40,7 +40,13 @@ REST=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --cwd) EFFECTIVE_CWD="$2"; shift 2 ;;
+    --cwd)
+      if [[ $# -lt 2 ]]; then
+        printf 'obsidian-context: --cwd requires a path argument\n' >&2
+        exit 2
+      fi
+      EFFECTIVE_CWD="$2"; shift 2
+      ;;
     --json) JSON_OUTPUT=1; shift ;;
     --help|-h) print_help; exit 0 ;;
     --) shift; REST+=("$@"); break ;;
@@ -48,7 +54,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-set -- "${REST[@]:-}"
+# Replace positional params with REST. Guard against empty array under set -u.
+if (( ${#REST[@]} > 0 )); then
+  set -- "${REST[@]}"
+else
+  set --
+fi
 
 if [[ $# -eq 0 ]]; then
   print_help

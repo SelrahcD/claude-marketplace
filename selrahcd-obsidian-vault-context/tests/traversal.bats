@@ -12,6 +12,19 @@ teardown() { teardown_tmp_root; }
   [[ "$output" == *"Usage:"* ]]
 }
 
+@test "CLI prints help when run with no args" {
+  run "$CLI_BIN"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Usage:"* ]]
+}
+
+@test "CLI exits 2 with a clear message when --cwd has no argument" {
+  run "$CLI_BIN" --cwd
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"--cwd"* ]]
+  [[ "$output" == *"path"* ]]
+}
+
 @test "where: lists CWD-only config when only CWD has one" {
   write_config "$TMP_ROOT/A/B/C" '{}'
   run_cli "$TMP_ROOT/A/B/C" where
@@ -45,8 +58,28 @@ teardown() { teardown_tmp_root; }
   [ "$local_line" -lt "$global_line" ]
 }
 
-@test "where: prints nothing and exits 0 when no configs exist anywhere" {
+@test "where: returns nothing for non-existent CWD (silent on missing dir)" {
+  # $TMP_ROOT/A/B/C does not exist as a directory; deviation from plan reference impl
   run_cli "$TMP_ROOT/A/B/C" where
   [ "$status" -eq 0 ]
   [ -z "$output" ]
+}
+
+@test "where: returns nothing for an existing CWD with no configs anywhere" {
+  mkdir -p "$TMP_ROOT/A/B/C"
+  run_cli "$TMP_ROOT/A/B/C" where
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "where: deduplicates global config when HOME is an ancestor of CWD" {
+  # Set HOME to a tmpdir, write a global config, then walk from a subdir of HOME.
+  # The walk visits HOME and finds the global; the post-walk append must NOT re-emit it.
+  mkdir -p "$HOME/sub/dir"
+  write_global_config '{}'
+  run_cli "$HOME/sub/dir" where
+  [ "$status" -eq 0 ]
+  # Count how many times the global path appears in output.
+  count=$(echo "$output" | grep -c "^$HOME/.obsidian-vault-context.json$" || true)
+  [ "$count" -eq 1 ]
 }
