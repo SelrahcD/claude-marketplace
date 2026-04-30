@@ -388,6 +388,86 @@ EOF
       --arg c "$collection" \
       --arg vp "$vault_path"
     ;;
+  label)
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: label: missing action (set|remove)\n' >&2; exit 2; }
+    action="$1"; shift
+
+    case "$action" in
+      set)
+        [[ $# -ge 2 ]] || { printf 'obsidian-context: label set: requires <name> <description>\n' >&2; exit 2; }
+        name="$1"; shift
+        desc="$1"; shift
+        scope="local"
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            --scope)
+              if [[ $# -lt 2 ]]; then
+                printf 'obsidian-context: label set: --scope requires a value\n' >&2
+                exit 2
+              fi
+              scope="$2"; shift 2 ;;
+            --help|-h) printf 'Usage: obsidian-context label set <name> <description> [--scope ...]\n'; exit 0 ;;
+            *) printf 'obsidian-context: label set: unexpected arg %q\n' "$1" >&2; exit 2 ;;
+          esac
+        done
+
+        target=$(scope_resolve "$scope" "$EFFECTIVE_CWD") || exit 1
+
+        if [[ -f "$target" && -s "$target" ]]; then
+          schema_validate_file "$target" || exit 1
+        fi
+
+        write_atomic_json "$target" '
+          (if . == null then {files: [], directories: [], labels: {}} else . end)
+          | .labels = ((.labels // {}) | .[$name] = $desc)
+        ' \
+          --arg name "$name" \
+          --arg desc "$desc"
+        ;;
+
+      remove)
+        [[ $# -ge 1 ]] || { printf 'obsidian-context: label remove: requires <name>\n' >&2; exit 2; }
+        name="$1"; shift
+        scope="local"
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            --scope)
+              if [[ $# -lt 2 ]]; then
+                printf 'obsidian-context: label remove: --scope requires a value\n' >&2
+                exit 2
+              fi
+              scope="$2"; shift 2 ;;
+            --help|-h) printf 'Usage: obsidian-context label remove <name> [--scope ...]\n'; exit 0 ;;
+            *) printf 'obsidian-context: label remove: unexpected arg %q\n' "$1" >&2; exit 2 ;;
+          esac
+        done
+
+        target=$(scope_resolve "$scope" "$EFFECTIVE_CWD") || exit 1
+
+        if [[ ! -f "$target" ]]; then
+          printf 'obsidian-context: label remove: target file does not exist: %s\n' "$target" >&2
+          exit 1
+        fi
+
+        schema_validate_file "$target" || exit 1
+
+        if ! jq -e --arg n "$name" '(.labels // {}) | has($n)' "$target" >/dev/null; then
+          printf 'obsidian-context: label remove: label %q not found in %s\n' "$name" "$target" >&2
+          exit 1
+        fi
+
+        write_atomic_json "$target" '
+          .labels = ((.labels // {}) | del(.[$name]))
+        ' \
+          --arg name "$name"
+        ;;
+
+      *)
+        printf 'obsidian-context: label: unknown action %q (expected set or remove)\n' "$action" >&2
+        exit 2
+        ;;
+    esac
+    ;;
   *)
     printf 'obsidian-context: subcommand %q not implemented yet\n' "$cmd" >&2
     exit 2

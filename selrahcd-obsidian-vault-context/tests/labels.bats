@@ -60,3 +60,32 @@ teardown() { teardown_tmp_root; }
   [ "$status" -eq 2 ]
   [[ "$output" == *"--search requires a value"* ]]
 }
+
+@test "label set: defines a new label" {
+  mkdir -p "$TMP_ROOT/A"
+  run_cli "$TMP_ROOT/A" label set marketplace "Marketplace plugin work" --scope current-directory
+  [ "$status" -eq 0 ]
+  jq -e '.labels.marketplace == "Marketplace plugin work"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
+
+@test "label set: refines an existing label (no --force needed)" {
+  write_config "$TMP_ROOT/A" '{"labels": {"x": "old"}}'
+  run_cli "$TMP_ROOT/A" label set x "new desc" --scope current-directory
+  [ "$status" -eq 0 ]
+  jq -e '.labels.x == "new desc"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
+
+@test "label remove: removes the named label" {
+  write_config "$TMP_ROOT/A" '{"labels": {"x": "X", "y": "Y"}}'
+  run_cli "$TMP_ROOT/A" label remove x --scope current-directory
+  [ "$status" -eq 0 ]
+  jq -e '.labels | has("x") == false' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  jq -e '.labels.y == "Y"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+}
+
+@test "label remove: errors when label not found" {
+  write_config "$TMP_ROOT/A" '{"labels": {"x": "X"}}'
+  run_cli "$TMP_ROOT/A" label remove missing --scope current-directory
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"missing"* ]]
+}
