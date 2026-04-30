@@ -1,0 +1,481 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Dependency check.
+if ! command -v jq >/dev/null 2>&1; then
+  printf 'obsidian-context: jq is required but not found on PATH (install with `brew install jq` or your distro package manager)\n' >&2
+  exit 127
+fi
+
+# Resolve the script's own directory so we can source siblings.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+LIB_DIR="$SCRIPT_DIR/../lib"
+
+source "$LIB_DIR/traversal.sh"
+source "$LIB_DIR/schema.sh"
+source "$LIB_DIR/merge.sh"
+source "$LIB_DIR/output.sh"
+source "$LIB_DIR/scope.sh"
+source "$LIB_DIR/write.sh"
+
+print_help() {
+  cat <<'EOF'
+obsidian-context — directory-aware index of Obsidian vault notes
+
+Usage: obsidian-context [global flags] <subcommand> [args]
+
+Read subcommands:
+  list      List file/directory entries (filterable)
+  labels    List known labels with descriptions
+  where     Show which config files were loaded
+
+Write subcommands:
+  add file <path>          Add a file entry
+  add directory <path>     Add a directory entry
+  remove file <path>       Remove a file entry
+  remove directory <path>  Remove a directory entry
+  label set <name> <desc>  Define or refine a label
+  label remove <name>      Remove a label
+
+Global flags:
+  --json          Structured output instead of human format
+  --cwd <path>    Pretend CLI was invoked from <path>
+  --help          Print this help
+EOF
+}
+
+# Parse global flags. Sets EFFECTIVE_CWD, JSON_OUTPUT, leaves remaining args in REST.
+EFFECTIVE_CWD="$PWD"
+JSON_OUTPUT=0
+REST=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --cwd)
+      if [[ $# -lt 2 ]]; then
+        printf 'obsidian-context: --cwd requires a path argument\n' >&2
+        exit 2
+      fi
+      EFFECTIVE_CWD="$2"; shift 2
+      ;;
+    --json) JSON_OUTPUT=1; shift ;;
+    --help|-h) print_help; exit 0 ;;
+    --) shift; REST+=("$@"); break ;;
+    *) REST+=("$1"); shift ;;
+  esac
+done
+
+# Replace positional params with REST. Guard against empty array under set -u.
+if (( ${#REST[@]} > 0 )); then
+  set -- "${REST[@]}"
+else
+  set --
+fi
+
+if [[ $# -eq 0 ]]; then
+  print_help
+  exit 0
+fi
+
+build_merged() {
+  local cwd="$1"
+  local files=()
+  while IFS= read -r path; do
+    [[ -n "$path" ]] || continue
+    schema_validate_file "$path" || exit 1
+    files+=("$path")
+  done < <(traversal_collect "$cwd")
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    printf '{"files":[],"directories":[],"labels":{}}\n'
+  else
+    merge_collections "${files[@]}"
+  fi
+}
+
+cmd="$1"; shift
+case "$cmd" in
+  where)
+    while IFS= read -r path; do
+      schema_validate_file "$path" || exit 1
+      printf '%s\n' "$path"
+    done < <(traversal_collect "$EFFECTIVE_CWD")
+    ;;
+  list)
+    kind=""
+    labels=()
+    any=0
+    search=""
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --kind)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: list: --kind requires a value\n' >&2
+            exit 2
+          fi
+          kind="$2"; shift 2 ;;
+        --label)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: list: --label requires a value\n' >&2
+            exit 2
+          fi
+          labels+=("$2"); shift 2 ;;
+        --any) any=1; shift ;;
+        --search)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: list: --search requires a value\n' >&2
+            exit 2
+          fi
+          search="$2"; shift 2 ;;
+        --help|-h)
+          cat <<'EOF'
+Usage: obsidian-context list [--kind files|directories]
+                             [--label <name>]... [--any]
+                             [--search <term>]
+                             [--json]
+EOF
+          exit 0
+          ;;
+        *) printf 'obsidian-context: list: unexpected arg %q\n' "$1" >&2; exit 2 ;;
+      esac
+    done
+
+    if [[ -n "$kind" && "$kind" != "files" && "$kind" != "directories" ]]; then
+      printf 'obsidian-context: list: --kind must be "files" or "directories"\n' >&2
+      exit 2
+    fi
+
+    merged=$(build_merged "$EFFECTIVE_CWD")
+
+    # Apply filters via jq, producing a filtered merged-shape JSON.
+    labels_json="[]"
+    if [[ ${#labels[@]} -gt 0 ]]; then
+      labels_json=$(printf '%s\n' "${labels[@]}" | jq -R . | jq -s .)
+    fi
+
+    filtered=$(jq \
+      --arg kind "$kind" \
+      --argjson labels "$labels_json" \
+      --argjson any "$any" \
+      --arg search "$search" \
+      '
+      def matches_labels($entry):
+        if ($labels | length) == 0 then true
+        elif $any == 1 then
+          ($entry.labels // []) as $L | any($labels[]; . as $l | $L | index($l))
+        else
+          ($entry.labels // []) as $L | all($labels[]; . as $l | $L | index($l))
+        end;
+
+      def matches_search($entry):
+        if $search == "" then true
+        else
+          ($entry.path | ascii_downcase | contains($search | ascii_downcase))
+          or ($entry.description | ascii_downcase | contains($search | ascii_downcase))
+        end;
+
+      {
+        files: (
+          if $kind == "directories" then []
+          else (.files // []) | map(select(matches_labels(.) and matches_search(.)))
+          end
+        ),
+        directories: (
+          if $kind == "files" then []
+          else (.directories // []) | map(select(matches_labels(.) and matches_search(.)))
+          end
+        ),
+        labels: (.labels // {})
+      }
+      ' <<<"$merged")
+
+    if [[ "$JSON_OUTPUT" == "1" ]]; then
+      output_entries_json "$filtered"
+    else
+      output_entries_human "$filtered"
+    fi
+    ;;
+  labels)
+    search=""
+    show_source=0
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --search)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: labels: --search requires a value\n' >&2
+            exit 2
+          fi
+          search="$2"; shift 2 ;;
+        --show-source) show_source=1; shift ;;
+        --help|-h)
+          cat <<'EOF'
+Usage: obsidian-context labels [--search <term>] [--show-source] [--json]
+EOF
+          exit 0
+          ;;
+        *) printf 'obsidian-context: labels: unexpected arg %q\n' "$1" >&2; exit 2 ;;
+      esac
+    done
+
+    merged=$(build_merged "$EFFECTIVE_CWD")
+
+    filtered=$(jq --arg search "$search" '
+      .labels // {}
+      | if $search == "" then .
+        else with_entries(
+          select(
+            (.key | ascii_downcase | contains($search | ascii_downcase))
+            or (.value.description | ascii_downcase | contains($search | ascii_downcase))
+          )
+        )
+        end
+      | { labels: . }
+    ' <<<"$merged")
+
+    if [[ "$JSON_OUTPUT" == "1" ]]; then
+      output_labels_json "$filtered"
+    else
+      output_labels_human "$filtered" "$show_source"
+    fi
+    ;;
+  add)
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: add: missing kind (file|directory)\n' >&2; exit 2; }
+    kind="$1"; shift
+    case "$kind" in
+      file|directory)
+        # Map to plural collection name in the JSON.
+        if [[ "$kind" == "file" ]]; then collection="files"; else collection="directories"; fi
+        ;;
+      *)
+        printf 'obsidian-context: add: unknown kind %q (expected file or directory)\n' "$kind" >&2
+        exit 2
+        ;;
+    esac
+
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: add %s: missing <vault-path>\n' "$kind" >&2; exit 2; }
+    vault_path="$1"; shift
+
+    description=""
+    labels=()
+    scope="local"
+    force=0
+
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --description)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: add %s: --description requires a value\n' "$kind" >&2
+            exit 2
+          fi
+          description="$2"; shift 2 ;;
+        --label)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: add %s: --label requires a value\n' "$kind" >&2
+            exit 2
+          fi
+          labels+=("$2"); shift 2 ;;
+        --scope)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: add %s: --scope requires a value\n' "$kind" >&2
+            exit 2
+          fi
+          scope="$2"; shift 2 ;;
+        --force) force=1; shift ;;
+        --help|-h)
+          cat <<EOF
+Usage: obsidian-context add $kind <vault-path>
+                          --description <text>
+                          [--label <name>]...
+                          [--scope local|current-directory|global|<path>]
+                          [--force]
+EOF
+          exit 0
+          ;;
+        *) printf 'obsidian-context: add %s: unexpected arg %q\n' "$kind" "$1" >&2; exit 2 ;;
+      esac
+    done
+
+    if [[ -z "$description" ]]; then
+      printf 'obsidian-context: add %s: --description is required\n' "$kind" >&2
+      exit 2
+    fi
+
+    target=$(scope_resolve "$scope" "$EFFECTIVE_CWD") || exit 1
+
+    if [[ -f "$target" && -s "$target" ]]; then
+      schema_validate_file "$target" || exit 1
+    fi
+
+    labels_json="[]"
+    if [[ ${#labels[@]} -gt 0 ]]; then
+      labels_json=$(printf '%s\n' "${labels[@]}" | jq -R . | jq -s .)
+    fi
+
+    # Note: must use `if !` (not `cmd; rc=$?`) because `set -e` would otherwise
+    # exit before we can inspect the failure mode.
+    if ! write_atomic_json "$target" '
+      def empty_doc: {files: [], directories: [], labels: {}};
+      (if . == null then empty_doc else . end) as $doc
+      | ($doc[$collection] // []) as $arr
+      | ($arr | map(.path == $vp) | any) as $exists
+      | ($arr | map(select(.path == $vp))[0]) as $existing
+      | if $exists then
+          if $force == 1 then
+            $doc | .[$collection] = (
+              ($arr | map(select(.path != $vp)))
+              + [{ path: $vp, description: $desc, labels: $labels }]
+            )
+          elif ($existing.description == $desc and (($existing.labels // []) == $labels)) then
+            $doc
+          else
+            error("CONFLICT")
+          end
+        else
+          $doc | .[$collection] = $arr + [{ path: $vp, description: $desc, labels: $labels }]
+        end
+      ' \
+      --arg collection "$collection" \
+      --arg vp "$vault_path" \
+      --arg desc "$description" \
+      --argjson labels "$labels_json" \
+      --argjson force "$force" ; then
+      if [[ -f "$target" ]] && jq -e --arg c "$collection" --arg vp "$vault_path" \
+          '.[$c] // [] | map(.path == $vp) | any' "$target" >/dev/null; then
+        printf 'obsidian-context: add %s: entry %q already exists with different fields; use --force to overwrite\n' \
+          "$kind" "$vault_path" >&2
+      fi
+      exit 1
+    fi
+    ;;
+  remove)
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: remove: missing kind\n' >&2; exit 2; }
+    kind="$1"; shift
+    case "$kind" in
+      file) collection="files" ;;
+      directory) collection="directories" ;;
+      *) printf 'obsidian-context: remove: unknown kind %q\n' "$kind" >&2; exit 2 ;;
+    esac
+
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: remove %s: missing <vault-path>\n' "$kind" >&2; exit 2; }
+    vault_path="$1"; shift
+
+    scope="local"
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --scope)
+          if [[ $# -lt 2 ]]; then
+            printf 'obsidian-context: remove %s: --scope requires a value\n' "$kind" >&2
+            exit 2
+          fi
+          scope="$2"; shift 2 ;;
+        --help|-h) printf 'Usage: obsidian-context remove %s <vault-path> [--scope ...]\n' "$kind"; exit 0 ;;
+        *) printf 'obsidian-context: remove %s: unexpected arg %q\n' "$kind" "$1" >&2; exit 2 ;;
+      esac
+    done
+
+    target=$(scope_resolve "$scope" "$EFFECTIVE_CWD") || exit 1
+
+    if [[ ! -f "$target" ]]; then
+      printf 'obsidian-context: remove %s: target file does not exist: %s\n' "$kind" "$target" >&2
+      exit 1
+    fi
+
+    schema_validate_file "$target" || exit 1
+
+    if ! jq -e --arg c "$collection" --arg vp "$vault_path" \
+        '.[$c] // [] | map(.path == $vp) | any' "$target" >/dev/null; then
+      printf 'obsidian-context: remove %s: entry %q not found in %s\n' "$kind" "$vault_path" "$target" >&2
+      exit 1
+    fi
+
+    write_atomic_json "$target" '
+      .[$c] = ((.[$c] // []) | map(select(.path != $vp)))
+    ' \
+      --arg c "$collection" \
+      --arg vp "$vault_path"
+    ;;
+  label)
+    [[ $# -gt 0 ]] || { printf 'obsidian-context: label: missing action (set|remove)\n' >&2; exit 2; }
+    action="$1"; shift
+
+    case "$action" in
+      set)
+        [[ $# -ge 2 ]] || { printf 'obsidian-context: label set: requires <name> <description>\n' >&2; exit 2; }
+        name="$1"; shift
+        desc="$1"; shift
+        scope="local"
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            --scope)
+              if [[ $# -lt 2 ]]; then
+                printf 'obsidian-context: label set: --scope requires a value\n' >&2
+                exit 2
+              fi
+              scope="$2"; shift 2 ;;
+            --help|-h) printf 'Usage: obsidian-context label set <name> <description> [--scope ...]\n'; exit 0 ;;
+            *) printf 'obsidian-context: label set: unexpected arg %q\n' "$1" >&2; exit 2 ;;
+          esac
+        done
+
+        target=$(scope_resolve "$scope" "$EFFECTIVE_CWD") || exit 1
+
+        if [[ -f "$target" && -s "$target" ]]; then
+          schema_validate_file "$target" || exit 1
+        fi
+
+        write_atomic_json "$target" '
+          (if . == null then {files: [], directories: [], labels: {}} else . end)
+          | .labels = ((.labels // {}) | .[$name] = $desc)
+        ' \
+          --arg name "$name" \
+          --arg desc "$desc"
+        ;;
+
+      remove)
+        [[ $# -ge 1 ]] || { printf 'obsidian-context: label remove: requires <name>\n' >&2; exit 2; }
+        name="$1"; shift
+        scope="local"
+        while [[ $# -gt 0 ]]; do
+          case "$1" in
+            --scope)
+              if [[ $# -lt 2 ]]; then
+                printf 'obsidian-context: label remove: --scope requires a value\n' >&2
+                exit 2
+              fi
+              scope="$2"; shift 2 ;;
+            --help|-h) printf 'Usage: obsidian-context label remove <name> [--scope ...]\n'; exit 0 ;;
+            *) printf 'obsidian-context: label remove: unexpected arg %q\n' "$1" >&2; exit 2 ;;
+          esac
+        done
+
+        target=$(scope_resolve "$scope" "$EFFECTIVE_CWD") || exit 1
+
+        if [[ ! -f "$target" ]]; then
+          printf 'obsidian-context: label remove: target file does not exist: %s\n' "$target" >&2
+          exit 1
+        fi
+
+        schema_validate_file "$target" || exit 1
+
+        if ! jq -e --arg n "$name" '(.labels // {}) | has($n)' "$target" >/dev/null; then
+          printf 'obsidian-context: label remove: label %q not found in %s\n' "$name" "$target" >&2
+          exit 1
+        fi
+
+        write_atomic_json "$target" '
+          .labels = ((.labels // {}) | del(.[$name]))
+        ' \
+          --arg name "$name"
+        ;;
+
+      *)
+        printf 'obsidian-context: label: unknown action %q (expected set or remove)\n' "$action" >&2
+        exit 2
+        ;;
+    esac
+    ;;
+  *)
+    printf 'obsidian-context: subcommand %q not implemented yet\n' "$cmd" >&2
+    exit 2
+    ;;
+esac

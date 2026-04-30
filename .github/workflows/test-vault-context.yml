@@ -1,0 +1,26 @@
+name: obsidian-vault-context tests
+
+on:
+  push:
+    paths:
+      - "selrahcd-obsidian-vault-context/**"
+      - ".github/workflows/test-vault-context.yml"
+  pull_request:
+    paths:
+      - "selrahcd-obsidian-vault-context/**"
+      - ".github/workflows/test-vault-context.yml"
+
+jobs:
+  bats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats jq
+
+      - name: Verify bash version
+        run: bash --version
+
+      - name: Run tests
+        run: ./selrahcd-obsidian-vault-context/tests/run.sh
