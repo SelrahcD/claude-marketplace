@@ -94,11 +94,82 @@ case "$cmd" in
     done < <(traversal_collect "$EFFECTIVE_CWD")
     ;;
   list)
+    kind=""
+    labels=()
+    any=0
+    search=""
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --kind) kind="$2"; shift 2 ;;
+        --label) labels+=("$2"); shift 2 ;;
+        --any) any=1; shift ;;
+        --search) search="$2"; shift 2 ;;
+        --help|-h)
+          cat <<'EOF'
+Usage: obsidian-context list [--kind files|directories]
+                             [--label <name>]... [--any]
+                             [--search <term>]
+                             [--json]
+EOF
+          exit 0
+          ;;
+        *) printf 'obsidian-context: list: unexpected arg %q\n' "$1" >&2; exit 2 ;;
+      esac
+    done
+
+    if [[ -n "$kind" && "$kind" != "files" && "$kind" != "directories" ]]; then
+      printf 'obsidian-context: list: --kind must be "files" or "directories"\n' >&2
+      exit 2
+    fi
+
     merged=$(build_merged "$EFFECTIVE_CWD")
+
+    # Apply filters via jq, producing a filtered merged-shape JSON.
+    labels_json="[]"
+    if [[ ${#labels[@]} -gt 0 ]]; then
+      labels_json=$(printf '%s\n' "${labels[@]}" | jq -R . | jq -s .)
+    fi
+
+    filtered=$(jq \
+      --arg kind "$kind" \
+      --argjson labels "$labels_json" \
+      --argjson any "$any" \
+      --arg search "$search" \
+      '
+      def matches_labels($entry):
+        if ($labels | length) == 0 then true
+        elif $any == 1 then
+          ($entry.labels // []) as $L | any($labels[]; . as $l | $L | index($l))
+        else
+          ($entry.labels // []) as $L | all($labels[]; . as $l | $L | index($l))
+        end;
+
+      def matches_search($entry):
+        if $search == "" then true
+        else
+          ($entry.path | ascii_downcase | contains($search | ascii_downcase))
+          or ($entry.description | ascii_downcase | contains($search | ascii_downcase))
+        end;
+
+      {
+        files: (
+          if $kind == "directories" then []
+          else (.files // []) | map(select(matches_labels(.) and matches_search(.)))
+          end
+        ),
+        directories: (
+          if $kind == "files" then []
+          else (.directories // []) | map(select(matches_labels(.) and matches_search(.)))
+          end
+        ),
+        labels: (.labels // {})
+      }
+      ' <<<"$merged")
+
     if [[ "$JSON_OUTPUT" == "1" ]]; then
-      output_entries_json "$merged"
+      output_entries_json "$filtered"
     else
-      output_entries_human "$merged"
+      output_entries_human "$filtered"
     fi
     ;;
   *)

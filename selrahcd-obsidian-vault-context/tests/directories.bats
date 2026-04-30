@@ -17,3 +17,13 @@ teardown() { teardown_tmp_root; }
   [[ "$output" == *"All projects"* ]]
   [[ "$output" == *"root"* ]]
 }
+
+@test "list --kind directories: shows only directory entries" {
+  write_config "$TMP_ROOT/A" '{
+    "files": [{"path": "f.md", "description": "F", "labels": []}],
+    "directories": [{"path": "d/", "description": "D", "labels": []}]
+  }'
+  run_cli "$TMP_ROOT/A" list --kind directories
+  [[ "$output" != *"f.md"* ]]
+  [[ "$output" == *"d/"* ]]
+}
