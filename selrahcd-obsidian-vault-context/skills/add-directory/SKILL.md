@@ -21,17 +21,29 @@ You need:
 - `description` — one-line explanation.
 - `labels` — zero or more.
 
-### 2. Check existing labels
+### 2. Verify the directory exists in the vault
+
+**Do not register a directory that doesn't exist.** Use the `obsidian-cli` (via the `obsidian:obsidian-cli` skill, or directly if available on PATH) to confirm the directory is actually in the vault before adding it to the index.
+
+If the directory is found, proceed.
+
+If the directory is NOT found:
+- List the parent directory in the vault (or search for similar directory names) to find candidates.
+- Present the closest matches to the user ("I didn't find `<original path>/`. Did you mean `<candidate-1>/`, `<candidate-2>/`, or `<candidate-3>/`?").
+- Wait for the user to pick one or correct the path. **Never silently substitute a different path** — confirm first.
+- If the user wants to register a directory they plan to create shortly, let them confirm explicitly before proceeding.
+
+### 3. Check existing labels
 
 ```bash
 obsidian-context labels
 ```
 
-### 3. Pick a scope
+### 4. Pick a scope
 
 See `add-file` skill for scope semantics — same rules apply.
 
-### 4. Run the CLI
+### 5. Run the CLI
 
 ```bash
 obsidian-context add directory "<vault-dir>/" \
@@ -40,6 +52,6 @@ obsidian-context add directory "<vault-dir>/" \
   --scope <scope>
 ```
 
-### 5. Handle conflicts
+### 6. Handle conflicts
 
 Same as `add-file`: re-run with `--force` if user accepts overwrite.
