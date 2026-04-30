@@ -7,6 +7,8 @@ LIB_DIR="$SCRIPT_DIR/../lib"
 
 source "$LIB_DIR/traversal.sh"
 source "$LIB_DIR/schema.sh"
+source "$LIB_DIR/merge.sh"
+source "$LIB_DIR/output.sh"
 
 print_help() {
   cat <<'EOF'
@@ -67,6 +69,22 @@ if [[ $# -eq 0 ]]; then
   exit 0
 fi
 
+build_merged() {
+  local cwd="$1"
+  local files=()
+  while IFS= read -r path; do
+    [[ -n "$path" ]] || continue
+    schema_validate_file "$path" || exit 1
+    files+=("$path")
+  done < <(traversal_collect "$cwd")
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    printf '{"files":[],"directories":[],"labels":{}}\n'
+  else
+    merge_collections "${files[@]}"
+  fi
+}
+
 cmd="$1"; shift
 case "$cmd" in
   where)
@@ -74,6 +92,14 @@ case "$cmd" in
       schema_validate_file "$path" || exit 1
       printf '%s\n' "$path"
     done < <(traversal_collect "$EFFECTIVE_CWD")
+    ;;
+  list)
+    merged=$(build_merged "$EFFECTIVE_CWD")
+    if [[ "$JSON_OUTPUT" == "1" ]]; then
+      output_entries_json "$merged"
+    else
+      output_entries_human "$merged"
+    fi
     ;;
   *)
     printf 'obsidian-context: subcommand %q not implemented yet\n' "$cmd" >&2
