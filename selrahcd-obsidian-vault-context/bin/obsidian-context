@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Resolve the script's own directory so we can source siblings.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+LIB_DIR="$SCRIPT_DIR/../lib"
+
+source "$LIB_DIR/traversal.sh"
+
 print_help() {
   cat <<'EOF'
 obsidian-context — directory-aware index of Obsidian vault notes
@@ -24,15 +30,38 @@ Global flags:
   --json          Structured output instead of human format
   --cwd <path>    Pretend CLI was invoked from <path>
   --help          Print this help
-
-Run 'obsidian-context <subcommand> --help' for subcommand details.
 EOF
 }
 
-if [[ $# -eq 0 || "$1" == "--help" || "$1" == "-h" ]]; then
+# Parse global flags. Sets EFFECTIVE_CWD, JSON_OUTPUT, leaves remaining args in REST.
+EFFECTIVE_CWD="$PWD"
+JSON_OUTPUT=0
+REST=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --cwd) EFFECTIVE_CWD="$2"; shift 2 ;;
+    --json) JSON_OUTPUT=1; shift ;;
+    --help|-h) print_help; exit 0 ;;
+    --) shift; REST+=("$@"); break ;;
+    *) REST+=("$1"); shift ;;
+  esac
+done
+
+set -- "${REST[@]:-}"
+
+if [[ $# -eq 0 ]]; then
   print_help
   exit 0
 fi
 
-echo "obsidian-context: subcommand '$1' not implemented yet" >&2
-exit 2
+cmd="$1"; shift
+case "$cmd" in
+  where)
+    traversal_collect "$EFFECTIVE_CWD"
+    ;;
+  *)
+    printf 'obsidian-context: subcommand %q not implemented yet\n' "$cmd" >&2
+    exit 2
+    ;;
+esac
