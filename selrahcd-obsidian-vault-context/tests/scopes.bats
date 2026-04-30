@@ -16,14 +16,25 @@ teardown() { teardown_tmp_root; }
   [ "$status" -eq 0 ]
   [ -f "$TMP_ROOT/A/.obsidian-vault-context.json" ]
   [ ! -f "$TMP_ROOT/A/B/C/.obsidian-vault-context.json" ]
-  jq -e '.files[0].path == "foo.md"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "files": [
+    {
+      "path": "foo.md",
+      "description": "X",
+      "labels": []
+    }
+  ]
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "scope local: errors when no config exists at or above CWD" {
   mkdir -p "$TMP_ROOT/A/B/C"
   run_cli "$TMP_ROOT/A/B/C" add file foo.md --description "X"
   [ "$status" -ne 0 ]
-  [[ "$output" == *"no existing"* ]] || [[ "$output" == *"current-directory"* ]]
+  expected="obsidian-context: no existing .obsidian-vault-context.json found at or above $TMP_ROOT/A/B/C
+use --scope current-directory to create one here, or --scope <dir>"
+  [ "$output" = "$expected" ]
 }
 
 @test "scope current-directory: creates config at CWD" {
@@ -51,7 +62,7 @@ teardown() { teardown_tmp_root; }
   mkdir -p "$TMP_ROOT/A"
   run_cli "$TMP_ROOT/A" add file foo.md --description "X" --scope "$TMP_ROOT/does/not/exist"
   [ "$status" -ne 0 ]
-  [[ "$output" == *"directory does not exist"* ]] || [[ "$output" == *"$TMP_ROOT/does/not/exist"* ]]
+  [ "$output" = "obsidian-context: --scope: directory does not exist: $TMP_ROOT/does/not/exist" ]
 }
 
 @test "scope ./local: directory literally named 'local' is treated as path when prefixed" {

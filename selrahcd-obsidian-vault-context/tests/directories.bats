@@ -13,9 +13,9 @@ teardown() { teardown_tmp_root; }
   }'
   run_cli "$TMP_ROOT/A" list
   [ "$status" -eq 0 ]
-  [[ "$output" == *"Projects/"* ]]
-  [[ "$output" == *"All projects"* ]]
-  [[ "$output" == *"root"* ]]
+  expected="Projects/  [root]  All projects
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "list --kind directories: shows only directory entries" {
@@ -24,24 +24,45 @@ teardown() { teardown_tmp_root; }
     "directories": [{"path": "d/", "description": "D", "labels": []}]
   }'
   run_cli "$TMP_ROOT/A" list --kind directories
-  [[ "$output" != *"f.md"* ]]
-  [[ "$output" == *"d/"* ]]
+  expected="d/  []  D
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "add directory: creates entry in directories[]" {
   mkdir -p "$TMP_ROOT/A"
   run_cli "$TMP_ROOT/A" add directory "Projects/" --description "All projects" --label root --scope current-directory
   [ "$status" -eq 0 ]
-  jq -e '.directories | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.directories[0].path == "Projects/"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.directories[0].labels == ["root"]' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "files": [],
+  "directories": [
+    {
+      "path": "Projects/",
+      "description": "All projects",
+      "labels": [
+        "root"
+      ]
+    }
+  ],
+  "labels": {}
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "add directory: --force overwrites existing entry" {
   write_config "$TMP_ROOT/A" '{"directories": [{"path": "P/", "description": "Old", "labels": []}]}'
   run_cli "$TMP_ROOT/A" add directory "P/" --description "New" --scope current-directory --force
   [ "$status" -eq 0 ]
-  jq -e '.directories[0].description == "New"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "directories": [
+    {
+      "path": "P/",
+      "description": "New",
+      "labels": []
+    }
+  ]
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "remove directory: removes the matching entry" {
@@ -51,5 +72,14 @@ teardown() { teardown_tmp_root; }
   ]}'
   run_cli "$TMP_ROOT/A" remove directory "drop/" --scope current-directory
   [ "$status" -eq 0 ]
-  jq -e '.directories | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "directories": [
+    {
+      "path": "keep/",
+      "description": "K",
+      "labels": []
+    }
+  ]
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }

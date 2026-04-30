@@ -19,10 +19,9 @@ teardown() { teardown_tmp_root; }
   }'
   run_cli "$TMP_ROOT/A" list
   [ "$status" -eq 0 ]
-  [[ "$output" == *"Notes/X.md"* ]]
-  [[ "$output" == *"X note"* ]]
-  [[ "$output" == *"foo"* ]]
-  [[ "$output" == *"from:"*"A/.obsidian-vault-context.json"* ]]
+  expected="Notes/X.md  [foo]  X note
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "list: merges closest-first across levels with source attribution" {
@@ -35,11 +34,11 @@ teardown() { teardown_tmp_root; }
   run_cli "$TMP_ROOT/A/B" list
 
   [ "$status" -eq 0 ]
-  close_line=$(echo "$output" | grep -n "close.md" | head -1 | cut -d: -f1)
-  far_line=$(echo "$output" | grep -n "far.md" | head -1 | cut -d: -f1)
-  [ -n "$close_line" ]
-  [ -n "$far_line" ]
-  [ "$close_line" -lt "$far_line" ]
+  expected="close.md  []  Close
+  from: $TMP_ROOT/A/B/.obsidian-vault-context.json
+far.md  []  Far
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "list --kind files: shows only file entries" {
@@ -48,8 +47,9 @@ teardown() { teardown_tmp_root; }
     "directories": [{"path": "d/", "description": "D", "labels": []}]
   }'
   run_cli "$TMP_ROOT/A" list --kind files
-  [[ "$output" == *"f.md"* ]]
-  [[ "$output" != *"d/"* ]]
+  expected="f.md  []  F
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "list --label foo: shows only entries with that label" {
@@ -60,8 +60,9 @@ teardown() { teardown_tmp_root; }
     ]
   }'
   run_cli "$TMP_ROOT/A" list --label foo
-  [[ "$output" == *"x.md"* ]]
-  [[ "$output" != *"y.md"* ]]
+  expected="x.md  [foo]  X
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "list --label foo --label bar: AND semantics by default" {
@@ -72,8 +73,9 @@ teardown() { teardown_tmp_root; }
     ]
   }'
   run_cli "$TMP_ROOT/A" list --label foo --label bar
-  [[ "$output" == *"both.md"* ]]
-  [[ "$output" != *"foo.md"* ]]
+  expected="both.md  [foo, bar]  B
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "list --label foo --label bar --any: OR semantics with --any" {
@@ -85,9 +87,11 @@ teardown() { teardown_tmp_root; }
     ]
   }'
   run_cli "$TMP_ROOT/A" list --label foo --label bar --any
-  [[ "$output" == *"foo.md"* ]]
-  [[ "$output" == *"bar.md"* ]]
-  [[ "$output" != *"neither.md"* ]]
+  expected="foo.md  [foo]  F
+  from: $TMP_ROOT/A/.obsidian-vault-context.json
+bar.md  [bar]  B
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "list --search auth: substring match on path or description, case-insensitive" {
@@ -99,27 +103,29 @@ teardown() { teardown_tmp_root; }
     ]
   }'
   run_cli "$TMP_ROOT/A" list --search auth
-  [[ "$output" == *"Auth/refactor.md"* ]]
-  [[ "$output" == *"Other/x.md"* ]]
-  [[ "$output" != *"Other/y.md"* ]]
+  expected="Auth/refactor.md  []  Stuff
+  from: $TMP_ROOT/A/.obsidian-vault-context.json
+Other/x.md  []  About authentication
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "list --kind: errors with clear message when no value follows" {
   run_cli "$TMP_ROOT/A" list --kind
   [ "$status" -eq 2 ]
-  [[ "$output" == *"--kind requires a value"* ]]
+  [ "$output" = "obsidian-context: list: --kind requires a value" ]
 }
 
 @test "list --label: errors with clear message when no value follows" {
   run_cli "$TMP_ROOT/A" list --label
   [ "$status" -eq 2 ]
-  [[ "$output" == *"--label requires a value"* ]]
+  [ "$output" = "obsidian-context: list: --label requires a value" ]
 }
 
 @test "list --search: errors with clear message when no value follows" {
   run_cli "$TMP_ROOT/A" list --search
   [ "$status" -eq 2 ]
-  [[ "$output" == *"--search requires a value"* ]]
+  [ "$output" = "obsidian-context: list: --search requires a value" ]
 }
 
 @test "add file: creates file with single entry when none exists" {
@@ -127,48 +133,95 @@ teardown() { teardown_tmp_root; }
   run_cli "$TMP_ROOT/A" add file "Notes/X.md" --description "X note" --label foo --scope current-directory
   [ "$status" -eq 0 ]
   [ -f "$TMP_ROOT/A/.obsidian-vault-context.json" ]
-  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.files[0].path == "Notes/X.md"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.files[0].description == "X note"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.files[0].labels == ["foo"]' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "files": [
+    {
+      "path": "Notes/X.md",
+      "description": "X note",
+      "labels": [
+        "foo"
+      ]
+    }
+  ],
+  "directories": [],
+  "labels": {}
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "add file: appends to existing files[]" {
   write_config "$TMP_ROOT/A" '{"files": [{"path": "old.md", "description": "Old", "labels": []}]}'
   run_cli "$TMP_ROOT/A" add file "new.md" --description "New" --scope current-directory
   [ "$status" -eq 0 ]
-  jq -e '.files | length == 2' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "files": [
+    {
+      "path": "old.md",
+      "description": "Old",
+      "labels": []
+    },
+    {
+      "path": "new.md",
+      "description": "New",
+      "labels": []
+    }
+  ]
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "add file: duplicate path with same fields is a no-op (idempotent)" {
   write_config "$TMP_ROOT/A" '{"files": [{"path": "x.md", "description": "X", "labels": ["a"]}]}'
   run_cli "$TMP_ROOT/A" add file "x.md" --description "X" --label a --scope current-directory
   [ "$status" -eq 0 ]
-  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "files": [
+    {
+      "path": "x.md",
+      "description": "X",
+      "labels": [
+        "a"
+      ]
+    }
+  ]
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "add file: duplicate path with different description fails without --force" {
   write_config "$TMP_ROOT/A" '{"files": [{"path": "x.md", "description": "Old", "labels": []}]}'
   run_cli "$TMP_ROOT/A" add file "x.md" --description "New" --scope current-directory
   [ "$status" -ne 0 ]
-  [[ "$output" == *"--force"* ]] || [[ "$output" == *"already exists"* ]]
-  jq -e '.files[0].description == "Old"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected="jq: error (at <stdin>:0): CONFLICT
+obsidian-context: write: jq transform failed
+obsidian-context: add file: entry x.md already exists with different fields; use --force to overwrite"
+  [ "$output" = "$expected" ]
+  [ "$(jq -r '.files[0].description' "$TMP_ROOT/A/.obsidian-vault-context.json")" = "Old" ]
 }
 
 @test "add file --force: overwrites existing entry" {
   write_config "$TMP_ROOT/A" '{"files": [{"path": "x.md", "description": "Old", "labels": []}]}'
   run_cli "$TMP_ROOT/A" add file "x.md" --description "New" --label fresh --scope current-directory --force
   [ "$status" -eq 0 ]
-  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.files[0].description == "New"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.files[0].labels == ["fresh"]' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "files": [
+    {
+      "path": "x.md",
+      "description": "New",
+      "labels": [
+        "fresh"
+      ]
+    }
+  ]
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "add file: errors without --description" {
   mkdir -p "$TMP_ROOT/A"
   run_cli "$TMP_ROOT/A" add file "x.md" --scope current-directory
   [ "$status" -ne 0 ]
-  [[ "$output" == *"--description"* ]]
+  [ "$output" = "obsidian-context: add file: --description is required" ]
 }
 
 @test "add file: works correctly when target file is 0 bytes" {
@@ -176,8 +229,18 @@ teardown() { teardown_tmp_root; }
   : > "$TMP_ROOT/A/.obsidian-vault-context.json"
   run_cli "$TMP_ROOT/A" add file "x.md" --description "X" --scope current-directory
   [ "$status" -eq 0 ]
-  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.files[0].path == "x.md"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "files": [
+    {
+      "path": "x.md",
+      "description": "X",
+      "labels": []
+    }
+  ],
+  "directories": [],
+  "labels": {}
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "remove file: removes the matching entry, leaves others" {
@@ -187,20 +250,28 @@ teardown() { teardown_tmp_root; }
   ]}'
   run_cli "$TMP_ROOT/A" remove file "drop.md" --scope current-directory
   [ "$status" -eq 0 ]
-  jq -e '.files | length == 1' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.files[0].path == "keep.md"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "files": [
+    {
+      "path": "keep.md",
+      "description": "K",
+      "labels": []
+    }
+  ]
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "remove file: errors when target file does not exist" {
   mkdir -p "$TMP_ROOT/A"
   run_cli "$TMP_ROOT/A" remove file "x.md" --scope current-directory
   [ "$status" -ne 0 ]
-  [[ "$output" == *"not found"* ]] || [[ "$output" == *"does not exist"* ]]
+  [ "$output" = "obsidian-context: remove file: target file does not exist: $TMP_ROOT/A/.obsidian-vault-context.json" ]
 }
 
 @test "remove file: errors when entry not found in existing config" {
   write_config "$TMP_ROOT/A" '{"files": [{"path": "other.md", "description": "O", "labels": []}]}'
   run_cli "$TMP_ROOT/A" remove file "missing.md" --scope current-directory
   [ "$status" -ne 0 ]
-  [[ "$output" == *"missing.md"* ]]
+  [ "$output" = "obsidian-context: remove file: entry missing.md not found in $TMP_ROOT/A/.obsidian-vault-context.json" ]
 }

@@ -20,9 +20,9 @@ teardown() { teardown_tmp_root; }
   }'
   run_cli "$TMP_ROOT/A" labels
   [ "$status" -eq 0 ]
-  [[ "$output" == *"marketplace"* ]]
-  [[ "$output" == *"Marketplace plugin work"* ]]
-  [[ "$output" == *"project"* ]]
+  expected="marketplace: Marketplace plugin work
+project: Active project notes"
+  [ "$output" = "$expected" ]
 }
 
 @test "labels: closest description wins on conflict" {
@@ -30,16 +30,16 @@ teardown() { teardown_tmp_root; }
   write_config "$TMP_ROOT/A" '{"labels": {"project": "This specific project"}}'
   run_cli "$TMP_ROOT/A" labels
   [ "$status" -eq 0 ]
-  [[ "$output" == *"This specific project"* ]]
-  [[ "$output" != *"Generic project"* ]]
+  [ "$output" = "project: This specific project" ]
 }
 
 @test "labels --show-source: includes source path" {
   write_config "$TMP_ROOT/A" '{"labels": {"x": "X desc"}}'
   run_cli "$TMP_ROOT/A" labels --show-source
   [ "$status" -eq 0 ]
-  [[ "$output" == *"x: X desc"* ]]
-  [[ "$output" == *"from:"*"A/.obsidian-vault-context.json"* ]]
+  expected="x: X desc
+  from: $TMP_ROOT/A/.obsidian-vault-context.json"
+  [ "$output" = "$expected" ]
 }
 
 @test "labels --search: substring filter on label name and description" {
@@ -51,41 +51,56 @@ teardown() { teardown_tmp_root; }
   }'
   run_cli "$TMP_ROOT/A" labels --search auth
   [ "$status" -eq 0 ]
-  [[ "$output" == *"auth"* ]]
-  [[ "$output" != *"marketplace"* ]]
+  [ "$output" = "auth: Authentication module" ]
 }
 
 @test "labels --search: errors with clear message when no value follows" {
   run_cli "$TMP_ROOT/A" labels --search
   [ "$status" -eq 2 ]
-  [[ "$output" == *"--search requires a value"* ]]
+  [ "$output" = "obsidian-context: labels: --search requires a value" ]
 }
 
 @test "label set: defines a new label" {
   mkdir -p "$TMP_ROOT/A"
   run_cli "$TMP_ROOT/A" label set marketplace "Marketplace plugin work" --scope current-directory
   [ "$status" -eq 0 ]
-  jq -e '.labels.marketplace == "Marketplace plugin work"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "files": [],
+  "directories": [],
+  "labels": {
+    "marketplace": "Marketplace plugin work"
+  }
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "label set: refines an existing label (no --force needed)" {
   write_config "$TMP_ROOT/A" '{"labels": {"x": "old"}}'
   run_cli "$TMP_ROOT/A" label set x "new desc" --scope current-directory
   [ "$status" -eq 0 ]
-  jq -e '.labels.x == "new desc"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "labels": {
+    "x": "new desc"
+  }
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "label remove: removes the named label" {
   write_config "$TMP_ROOT/A" '{"labels": {"x": "X", "y": "Y"}}'
   run_cli "$TMP_ROOT/A" label remove x --scope current-directory
   [ "$status" -eq 0 ]
-  jq -e '.labels | has("x") == false' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
-  jq -e '.labels.y == "Y"' "$TMP_ROOT/A/.obsidian-vault-context.json" >/dev/null
+  expected='{
+  "labels": {
+    "y": "Y"
+  }
+}'
+  [ "$(jq . "$TMP_ROOT/A/.obsidian-vault-context.json")" = "$expected" ]
 }
 
 @test "label remove: errors when label not found" {
   write_config "$TMP_ROOT/A" '{"labels": {"x": "X"}}'
   run_cli "$TMP_ROOT/A" label remove missing --scope current-directory
   [ "$status" -ne 0 ]
-  [[ "$output" == *"missing"* ]]
+  [ "$output" = "obsidian-context: label remove: label missing not found in $TMP_ROOT/A/.obsidian-vault-context.json" ]
 }

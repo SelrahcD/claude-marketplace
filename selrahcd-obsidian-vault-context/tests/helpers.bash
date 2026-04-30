@@ -7,6 +7,7 @@ CLI_BIN="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/bin/obsidian-context"
 # Sets globals: TMP_ROOT, FAKE_HOME.
 setup_tmp_root() {
   TMP_ROOT="$(mktemp -d)"
+  TMP_ROOT="$(cd "$TMP_ROOT" && pwd -P)"
   FAKE_HOME="$TMP_ROOT/home"
   mkdir -p "$FAKE_HOME"
   export HOME="$FAKE_HOME"
