@@ -163,11 +163,13 @@ help_scan() {
 }
 
 # Parse global flags. Sets EFFECTIVE_CWD, JSON_OUTPUT, leaves remaining args in REST.
-# Stops consuming global flags at the first non-flag positional (the subcommand)
-# so that --help/-h after a subcommand is routed to subcommand help.
+# Walks the entire arg list so global flags (--json, --cwd) can appear before or
+# after the subcommand. Once a subcommand token has been seen, --help/-h is
+# routed to the subcommand instead of the global help.
 EFFECTIVE_CWD="$PWD"
 JSON_OUTPUT=0
 REST=()
+SUBCMD_SEEN=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -179,9 +181,15 @@ while [[ $# -gt 0 ]]; do
       EFFECTIVE_CWD="$2"; shift 2
       ;;
     --json) JSON_OUTPUT=1; shift ;;
-    --help|-h) print_help; exit 0 ;;
+    --help|-h)
+      if (( SUBCMD_SEEN == 0 )); then
+        print_help; exit 0
+      else
+        REST+=("$1"); shift
+      fi
+      ;;
     --) shift; REST+=("$@"); break ;;
-    *) REST+=("$@"); break ;;
+    *) SUBCMD_SEEN=1; REST+=("$1"); shift ;;
   esac
 done
 

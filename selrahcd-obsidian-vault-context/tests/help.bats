@@ -52,6 +52,13 @@ teardown() { teardown_tmp_root; }
   [[ "$output" == *"--scope"* ]]
 }
 
+@test "remove --help (no kind): shows combined usage" {
+  run_cli "$TMP_ROOT" remove --help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"remove file"* ]]
+  [[ "$output" == *"remove directory"* ]]
+}
+
 @test "label set --help: shows usage and exits 0" {
   run_cli "$TMP_ROOT" label set --help
   [ "$status" -eq 0 ]
@@ -64,6 +71,13 @@ teardown() { teardown_tmp_root; }
   [ "$status" -eq 0 ]
   [[ "$output" == *"label remove"* ]]
   [[ "$output" == *"--scope"* ]]
+}
+
+@test "label --help (no action): shows combined usage" {
+  run_cli "$TMP_ROOT" label --help
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"label set"* ]]
+  [[ "$output" == *"label remove"* ]]
 }
 
 @test "list --help still works (regression check)" {

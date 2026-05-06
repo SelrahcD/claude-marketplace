@@ -37,3 +37,10 @@ teardown() { teardown_tmp_root; }
   echo "$output" | jq -e '.files | length == 1' >/dev/null
   echo "$output" | jq -e '.files[0].path == "a.md"' >/dev/null
 }
+
+@test "global --json after subcommand: still works (regression)" {
+  write_config "$TMP_ROOT/A" '{"files": [{"path": "f.md", "description": "F", "labels": []}]}'
+  run "$CLI_BIN" --cwd "$TMP_ROOT/A" list --json
+  [ "$status" -eq 0 ]
+  echo "$output" | jq -e '.files | length == 1' >/dev/null
+}
