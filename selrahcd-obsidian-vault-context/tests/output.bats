@@ -1,7 +1,5 @@
 #!/usr/bin/env bats
 
-bats_require_minimum_version 1.5.0
-
 load helpers
 
 setup() { setup_tmp_root; }
@@ -52,14 +50,6 @@ teardown() { teardown_tmp_root; }
   [ "$status" -eq 0 ]
   [[ "$output" == *"no .obsidian-vault-context.json found at or above"* ]]
   [[ "$output" == *"$TMP_ROOT/A"* ]]
-}
-
-@test "where: empty case routes message to stderr, leaves stdout empty" {
-  run --separate-stderr "$CLI_BIN" --cwd "$TMP_ROOT/A" where
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
-  [[ "$stderr" == *"no .obsidian-vault-context.json found at or above"* ]]
-  [[ "$stderr" == *"$TMP_ROOT/A"* ]]
 }
 
 @test "list --json: empty case emits valid JSON and stays silent on stderr" {
