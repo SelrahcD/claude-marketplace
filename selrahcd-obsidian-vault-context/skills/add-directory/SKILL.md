@@ -23,15 +23,27 @@ You need:
 
 ### 2. Verify the directory exists in the vault
 
-**Do not register a directory that doesn't exist.** Use the `obsidian-cli` (via the `obsidian:obsidian-cli` skill, or directly if available on PATH) to confirm the directory is actually in the vault before adding it to the index.
+**Do not register a directory that doesn't exist.** Use the `obsidian` CLI
+(ships with Obsidian.app, on PATH automatically when the app is installed):
+
+```bash
+obsidian folder path="<vault-path>"
+```
+
+Exit 0 means the folder exists in the active vault. Non-zero with stderr
+`Error: Folder "<vault-path>" not found.` means it doesn't.
 
 If the directory is found, proceed.
 
 If the directory is NOT found:
-- List the parent directory in the vault (or search for similar directory names) to find candidates.
+- Search for similar names: `obsidian search query="<basename of vault-path>"`.
 - Present the closest matches to the user ("I didn't find `<original path>/`. Did you mean `<candidate-1>/`, `<candidate-2>/`, or `<candidate-3>/`?").
 - Wait for the user to pick one or correct the path. **Never silently substitute a different path** — confirm first.
 - If the user wants to register a directory they plan to create shortly, let them confirm explicitly before proceeding.
+
+If `obsidian` is not on PATH (Obsidian.app not installed, or non-macOS), skip
+verification and ask the user to confirm the path is correct before adding.
+Do not silently register an unverified entry.
 
 ### 3. Check existing labels
 
