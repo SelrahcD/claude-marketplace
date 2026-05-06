@@ -62,7 +62,9 @@ use --scope current-directory to create one here, or --scope <dir>"
   mkdir -p "$TMP_ROOT/A"
   run_cli "$TMP_ROOT/A" add file foo.md --description "X" --scope "$TMP_ROOT/does/not/exist"
   [ "$status" -ne 0 ]
-  [ "$output" = "obsidian-context: --scope: directory does not exist: $TMP_ROOT/does/not/exist" ]
+  expected="obsidian-context: --scope: directory does not exist: $TMP_ROOT/does/not/exist
+Accepted values: local | current-directory | global | <path>"
+  [ "$output" = "$expected" ]
 }
 
 @test "scope ./local: directory literally named 'local' is treated as path when prefixed" {
@@ -70,4 +72,41 @@ use --scope current-directory to create one here, or --scope <dir>"
   run_cli "$TMP_ROOT/A" add file foo.md --description "X" --scope "./local"
   [ "$status" -eq 0 ]
   [ -f "$TMP_ROOT/A/local/.obsidian-vault-context.json" ]
+}
+
+@test "scope directory: typo error suggests current-directory" {
+  mkdir -p "$TMP_ROOT/A"
+  run_cli "$TMP_ROOT/A" add file foo.md --description "X" --scope directory
+  [ "$status" -ne 0 ]
+  [[ "$output" == *'unknown value "directory"'* ]]
+  [[ "$output" == *"Did you mean --scope current-directory"* ]]
+  [[ "$output" == *"local | current-directory | global | <path>"* ]]
+}
+
+@test "scope cwd: typo error suggests current-directory" {
+  mkdir -p "$TMP_ROOT/A"
+  run_cli "$TMP_ROOT/A" add file foo.md --description "X" --scope cwd
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Did you mean --scope current-directory"* ]]
+}
+
+@test "scope here: typo error suggests current-directory" {
+  mkdir -p "$TMP_ROOT/A"
+  run_cli "$TMP_ROOT/A" add file foo.md --description "X" --scope here
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Did you mean --scope current-directory"* ]]
+}
+
+@test "scope current: typo error suggests current-directory" {
+  mkdir -p "$TMP_ROOT/A"
+  run_cli "$TMP_ROOT/A" add file foo.md --description "X" --scope current
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Did you mean --scope current-directory"* ]]
+}
+
+@test "scope project: typo error suggests current-directory" {
+  mkdir -p "$TMP_ROOT/A"
+  run_cli "$TMP_ROOT/A" add file foo.md --description "X" --scope project
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"Did you mean --scope current-directory"* ]]
 }
