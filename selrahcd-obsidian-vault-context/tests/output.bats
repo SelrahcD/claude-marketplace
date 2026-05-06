@@ -44,3 +44,17 @@ teardown() { teardown_tmp_root; }
   [ "$status" -eq 0 ]
   echo "$output" | jq -e '.files | length == 1' >/dev/null
 }
+
+@test "where: empty case prints stderr message and exits 0" {
+  run_cli "$TMP_ROOT/A" where
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"no .obsidian-vault-context.json found at or above"* ]]
+  [[ "$output" == *"$TMP_ROOT/A"* ]]
+}
+
+@test "list --json: empty case emits valid JSON and stays silent on stderr" {
+  run --separate-stderr "$CLI_BIN" --cwd "$TMP_ROOT/A" --json list
+  [ "$status" -eq 0 ]
+  echo "$output" | jq -e '.files == [] and .directories == [] and (.labels // {}) == {}' >/dev/null
+  [ -z "$stderr" ]
+}

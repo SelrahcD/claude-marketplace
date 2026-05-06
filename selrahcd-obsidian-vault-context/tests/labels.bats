@@ -5,10 +5,18 @@ load helpers
 setup() { setup_tmp_root; }
 teardown() { teardown_tmp_root; }
 
-@test "labels: empty when no configs" {
+@test "labels: empty case prints stderr message and exits 0" {
   run_cli "$TMP_ROOT/A" labels
   [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [[ "$output" == *"no labels defined yet"* ]]
+  [[ "$output" == *'obsidian-context label set'* ]]
+}
+
+@test "labels --json: empty case still emits {} and stays silent on stderr" {
+  run --separate-stderr "$CLI_BIN" --cwd "$TMP_ROOT/A" --json labels
+  [ "$status" -eq 0 ]
+  [ "$output" = "{}" ]
+  [ -z "$stderr" ]
 }
 
 @test "labels: lists single config's labels" {
