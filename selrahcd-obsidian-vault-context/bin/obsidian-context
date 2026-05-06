@@ -44,7 +44,127 @@ Global flags:
 EOF
 }
 
+# Print usage for `add` subcommand. Optional first arg is "file" or "directory"
+# to print only that variant; empty arg prints both.
+print_add_help() {
+  local kind="${1:-}"
+  if [[ -z "$kind" || "$kind" == "file" ]]; then
+    cat <<'EOF'
+Usage: obsidian-context add file <vault-path>
+                          --description <text>
+                          [--label <name>]...
+                          [--scope local|current-directory|global|<path>]
+                          [--force]
+
+Adds a file entry to the directory-aware index. Default scope is `local`
+(closest existing config above CWD). Use `current-directory` to create a new
+config in $PWD.
+EOF
+  fi
+  if [[ -z "$kind" ]]; then
+    printf '\n'
+  fi
+  if [[ -z "$kind" || "$kind" == "directory" ]]; then
+    cat <<'EOF'
+Usage: obsidian-context add directory <vault-path>
+                          --description <text>
+                          [--label <name>]...
+                          [--scope local|current-directory|global|<path>]
+                          [--force]
+
+Adds a directory entry to the directory-aware index. Vault paths should end
+with a trailing slash (e.g. "Projects/").
+EOF
+  fi
+}
+
+# Print usage for `remove` subcommand. Optional kind selects the variant.
+print_remove_help() {
+  local kind="${1:-}"
+  if [[ -z "$kind" || "$kind" == "file" ]]; then
+    cat <<'EOF'
+Usage: obsidian-context remove file <vault-path>
+                          [--scope local|current-directory|global|<path>]
+EOF
+  fi
+  if [[ -z "$kind" ]]; then
+    printf '\n'
+  fi
+  if [[ -z "$kind" || "$kind" == "directory" ]]; then
+    cat <<'EOF'
+Usage: obsidian-context remove directory <vault-path>
+                          [--scope local|current-directory|global|<path>]
+EOF
+  fi
+}
+
+# Print usage for `label` subcommand. Optional action selects the variant.
+print_label_help() {
+  local action="${1:-}"
+  if [[ -z "$action" || "$action" == "set" ]]; then
+    cat <<'EOF'
+Usage: obsidian-context label set <name> <description>
+                          [--scope local|current-directory|global|<path>]
+
+Defines or refines a label. Upserts (no --force needed) — the closest level's
+description wins on read.
+EOF
+  fi
+  if [[ -z "$action" ]]; then
+    printf '\n'
+  fi
+  if [[ -z "$action" || "$action" == "remove" ]]; then
+    cat <<'EOF'
+Usage: obsidian-context label remove <name>
+                          [--scope local|current-directory|global|<path>]
+EOF
+  fi
+}
+
+# Scan args for --help|-h. Echoes the matching kind/action context if a known
+# positional appears in args (controlled by the second arg, which lists valid
+# context tokens space-separated). Sets HELP_FOUND=1/0. Use as:
+#   help_scan "$@" -- file directory
+help_scan() {
+  HELP_FOUND=0
+  HELP_CTX=""
+  local args_done=0
+  local valid=()
+  for arg in "$@"; do
+    if (( args_done == 0 )); then
+      if [[ "$arg" == "--" ]]; then
+        args_done=1
+        continue
+      fi
+      case "$arg" in
+        --help|-h) HELP_FOUND=1 ;;
+      esac
+    else
+      valid+=("$arg")
+    fi
+  done
+  if (( HELP_FOUND == 0 )); then
+    return 0
+  fi
+  # Find the first non-flag arg that matches a valid context token.
+  for arg in "$@"; do
+    [[ "$arg" == "--" ]] && break
+    case "$arg" in
+      --*|-*) continue ;;
+    esac
+    for v in "${valid[@]}"; do
+      if [[ "$arg" == "$v" ]]; then
+        HELP_CTX="$arg"
+        return 0
+      fi
+    done
+  done
+  return 0
+}
+
 # Parse global flags. Sets EFFECTIVE_CWD, JSON_OUTPUT, leaves remaining args in REST.
+# Stops consuming global flags at the first non-flag positional (the subcommand)
+# so that --help/-h after a subcommand is routed to subcommand help.
 EFFECTIVE_CWD="$PWD"
 JSON_OUTPUT=0
 REST=()
@@ -61,7 +181,7 @@ while [[ $# -gt 0 ]]; do
     --json) JSON_OUTPUT=1; shift ;;
     --help|-h) print_help; exit 0 ;;
     --) shift; REST+=("$@"); break ;;
-    *) REST+=("$1"); shift ;;
+    *) REST+=("$@"); break ;;
   esac
 done
 
@@ -242,6 +362,11 @@ EOF
     fi
     ;;
   add)
+    help_scan "$@" -- file directory
+    if (( HELP_FOUND == 1 )); then
+      print_add_help "$HELP_CTX"
+      exit 0
+    fi
     [[ $# -gt 0 ]] || { printf 'obsidian-context: add: missing kind (file|directory)\n' >&2; exit 2; }
     kind="$1"; shift
     case "$kind" in
@@ -351,6 +476,11 @@ EOF
     fi
     ;;
   remove)
+    help_scan "$@" -- file directory
+    if (( HELP_FOUND == 1 )); then
+      print_remove_help "$HELP_CTX"
+      exit 0
+    fi
     [[ $# -gt 0 ]] || { printf 'obsidian-context: remove: missing kind\n' >&2; exit 2; }
     kind="$1"; shift
     case "$kind" in
@@ -398,6 +528,11 @@ EOF
       --arg vp "$vault_path"
     ;;
   label)
+    help_scan "$@" -- set remove
+    if (( HELP_FOUND == 1 )); then
+      print_label_help "$HELP_CTX"
+      exit 0
+    fi
     [[ $# -gt 0 ]] || { printf 'obsidian-context: label: missing action (set|remove)\n' >&2; exit 2; }
     action="$1"; shift
 
