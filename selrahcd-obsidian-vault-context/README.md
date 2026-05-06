@@ -25,6 +25,27 @@ Add the plugin to your Claude Code marketplace and enable it:
 
 The CLI `obsidian-context` is automatically available on PATH while the plugin is enabled.
 
+## Reducing permission prompts
+
+Each `obsidian-context` invocation triggers a Claude Code permission prompt
+unless the binary is on your allowlist. Add the following to either
+`~/.claude/settings.json` (global) or `.claude/settings.json` (project):
+
+```json
+{
+  "permissions": {
+    "allow": ["Bash(obsidian-context:*)"]
+  }
+}
+```
+
+## First run
+
+If the CLI errors with `no existing .obsidian-vault-context.json found at or
+above <cwd>`, you have no index here yet. Use `--scope current-directory` to
+create one in `$PWD`, or `--scope global` to write to
+`~/.obsidian-vault-context.json`.
+
 ## Config file schema
 
 Per-directory: `<dir>/.obsidian-vault-context.json`. Global: `~/.obsidian-vault-context.json`. Same shape both places.

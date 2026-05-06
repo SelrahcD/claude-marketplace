@@ -93,18 +93,18 @@ $HOME/.obsidian-vault-context.json"
   [ "$output" = "$expected" ]
 }
 
-@test "where: returns nothing for non-existent CWD (silent on missing dir)" {
+@test "where: prints empty-state message for non-existent CWD (no configs found)" {
   # $TMP_ROOT/A/B/C does not exist as a directory; deviation from plan reference impl
   run_cli "$TMP_ROOT/A/B/C" where
   [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [[ "$output" == *"no .obsidian-vault-context.json found at or above"* ]]
 }
 
-@test "where: returns nothing for an existing CWD with no configs anywhere" {
+@test "where: prints empty-state message for an existing CWD with no configs anywhere" {
   mkdir -p "$TMP_ROOT/A/B/C"
   run_cli "$TMP_ROOT/A/B/C" where
   [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [[ "$output" == *"no .obsidian-vault-context.json found at or above"* ]]
 }
 
 @test "where: deduplicates global config when HOME is an ancestor of CWD" {

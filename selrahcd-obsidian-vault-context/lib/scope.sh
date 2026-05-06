@@ -48,10 +48,20 @@ scope_resolve() {
       printf '%s\n' "$HOME/.obsidian-vault-context.json"
       ;;
     *)
+      # Detect common typos before treating the value as a path.
+      case "$scope" in
+        directory|current|cwd|here|project)
+          printf 'obsidian-context: --scope: unknown value "%s".\n' "$scope" >&2
+          printf 'Did you mean --scope current-directory?\n' >&2
+          printf 'Accepted values: local | current-directory | global | <path>\n' >&2
+          return 1
+          ;;
+      esac
       local resolved
       # Resolve relative paths against $cwd, not the process $PWD.
       resolved="$(cd "$cwd" 2>/dev/null && cd "$scope" 2>/dev/null && pwd -P)" || {
         printf 'obsidian-context: --scope: directory does not exist: %s\n' "$scope" >&2
+        printf 'Accepted values: local | current-directory | global | <path>\n' >&2
         return 1
       }
       printf '%s\n' "$resolved/.obsidian-vault-context.json"

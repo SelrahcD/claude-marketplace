@@ -1,6 +1,6 @@
 ---
 name: read-context
-description: Use when the user mentions vault tracking, asks where notes about a topic live, is about to write to the Obsidian vault, references an ongoing effort, or invokes anything that touches obsidian (MCP, obsidian-cli). Surfaces the merged directory-aware index of vault files and directories from `.obsidian-vault-context.json` files (per-directory + global).
+description: Use when the user mentions vault tracking, asks where notes about a topic live, is about to write to the Obsidian vault, references an ongoing effort, or invokes anything that touches obsidian (MCP, obsidian CLI). Surfaces the merged directory-aware index of vault files and directories from `.obsidian-vault-context.json` files (per-directory + global).
 ---
 
 # Read Vault Context
@@ -45,7 +45,7 @@ obsidian-context labels
 
 ### 3. Use the entries
 
-- For **read** intent: pick the matching entries and read those notes (via the obsidian MCP server or obsidian-cli).
+- For **read** intent: pick the matching entries and read those notes (via the obsidian MCP server or obsidian CLI).
 - For **write** intent: consult the entries, propose the most relevant one as the destination, and confirm with the user before appending.
 - If nothing matches and you create a new long-lived vault note during the session, offer to register it via the `add-file` skill.
 

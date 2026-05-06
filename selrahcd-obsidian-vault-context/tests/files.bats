@@ -5,10 +5,10 @@ load helpers
 setup() { setup_tmp_root; }
 teardown() { teardown_tmp_root; }
 
-@test "list: empty when no configs exist" {
+@test "list: empty case prints stderr message and exits 0" {
   run_cli "$TMP_ROOT/A" list
   [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [[ "$output" == *"no entries indexed for this directory yet"* ]]
 }
 
 @test "list: shows file entries from CWD config" {
