@@ -24,15 +24,27 @@ You need:
 
 ### 2. Verify the file exists in the vault
 
-**Do not register a path that doesn't exist.** Use the `obsidian-cli` (via the `obsidian:obsidian-cli` skill, or directly if available on PATH) to confirm the note is actually in the vault before adding it to the index.
+**Do not register a path that doesn't exist.** Use the `obsidian` CLI (ships
+with Obsidian.app, on PATH automatically when the app is installed):
+
+```bash
+obsidian file path="<vault-path>"
+```
+
+Exit 0 means the file exists in the active vault. Non-zero with stderr
+`Error: File "<vault-path>" not found.` means it doesn't.
 
 If the file is found, proceed.
 
 If the file is NOT found:
-- Search the vault for files with a similar name or path (e.g. `obsidian search "<basename without extension>"`, or list the parent directory).
+- Search for similar names: `obsidian search query="<basename without extension>"`.
 - Present the closest matches to the user as candidates ("I didn't find `<original path>`. Did you mean `<candidate-1>`, `<candidate-2>`, or `<candidate-3>`?").
 - Wait for the user to pick one or correct the path. **Never silently substitute a different path** — confirm first.
 - If the user wants to register a path that genuinely doesn't exist yet (e.g. they plan to create the note shortly), let them confirm explicitly before proceeding.
+
+If `obsidian` is not on PATH (Obsidian.app not installed, or non-macOS), skip
+verification and ask the user to confirm the path is correct before adding.
+Do not silently register an unverified entry.
 
 ### 3. See what labels exist before inventing new ones
 
