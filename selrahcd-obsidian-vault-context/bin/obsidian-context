@@ -224,10 +224,15 @@ build_merged() {
 cmd="$1"; shift
 case "$cmd" in
   where)
+    any=0
     while IFS= read -r path; do
       schema_validate_file "$path" || exit 1
       printf '%s\n' "$path"
+      any=1
     done < <(traversal_collect "$EFFECTIVE_CWD")
+    if (( any == 0 )) && [[ "$JSON_OUTPUT" != "1" ]]; then
+      printf 'obsidian-context: no .obsidian-vault-context.json found at or above %s, and no global config at ~/.obsidian-vault-context.json\n' "$EFFECTIVE_CWD" >&2
+    fi
     ;;
   list)
     kind=""
@@ -323,7 +328,12 @@ EOF
     if [[ "$JSON_OUTPUT" == "1" ]]; then
       output_entries_json "$filtered"
     else
-      output_entries_human "$filtered" "$show_source"
+      total=$(jq -r '(.files | length) + (.directories | length)' <<<"$filtered")
+      if [[ "$total" == "0" ]]; then
+        printf 'obsidian-context: no entries indexed for this directory yet\n' >&2
+      else
+        output_entries_human "$filtered" "$show_source"
+      fi
     fi
     ;;
   labels)
@@ -366,7 +376,11 @@ EOF
     if [[ "$JSON_OUTPUT" == "1" ]]; then
       output_labels_json "$filtered"
     else
-      output_labels_human "$filtered" "$show_source"
+      if [[ "$(jq -r '.labels | length' <<<"$filtered")" == "0" ]]; then
+        printf 'obsidian-context: no labels defined yet (define one with: obsidian-context label set <name> "<description>")\n' >&2
+      else
+        output_labels_human "$filtered" "$show_source"
+      fi
     fi
     ;;
   add)
