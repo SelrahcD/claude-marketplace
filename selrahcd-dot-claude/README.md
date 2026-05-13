@@ -24,6 +24,9 @@ Refactors test files to improve quality:
 - Logically groups related tests
 - Supports TypeScript/JavaScript, Python, Java, and C#
 
+#### `/selrahcd-dot-claude:refactor`
+Starts the refactoring skill. Optional free-text description seeds the SETUP state (e.g., `/refactor split Order into Order + TaxCalculator`).
+
 ### Agents
 
 #### `commit-assistant`
@@ -46,6 +49,13 @@ Manage Architecture Decision Records (ADRs) for documenting technical decisions:
 - `/adr show <number>` - Display a specific ADR
 - `/adr supersede <number> <new-title>` - Create a new ADR that supersedes an existing one
 - `/adr deprecate <number>` - Mark an ADR as deprecated
+
+#### `refactoring`
+Drive a refactor as a sequence of small, named refactorings from Martin Fowler's catalog. Each named refactoring is one commit, verified against a configured safety net (tests, type-checker, or manual review):
+- 17 refactorings in the v1 catalog (Extract Method, Inline Variable, Extract Class, Replace Conditional with Polymorphism, etc.)
+- Strict state-machine workflow modeled on `tdd-process`
+- Hybrid planning: plan upfront, evolve between steps
+- Invoke via `/refactor` or natural language ("refactor this", "extract method", "rename X")
 
 ## Installation
 
@@ -85,3 +95,4 @@ Manage Architecture Decision Records (ADRs) for documenting technical decisions:
 - Claude Code Optimizer skill: [Nick Tune (NTCoding)](https://github.com/NTCoding)
 - Using Git Worktrees skill: [Jesse Vincent](https://github.com/obra/superpowers/)
 - Brainstorming skill: [Jesse Vincent](https://github.com/obra/superpowers/)
+- Refactoring skill: [Martin Fowler — *Refactoring* (2nd ed.)](https://martinfowler.com/books/refactoring.html)
