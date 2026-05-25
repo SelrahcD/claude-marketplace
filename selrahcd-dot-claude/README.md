@@ -27,10 +27,21 @@ Refactors test files to improve quality:
 #### `/selrahcd-dot-claude:refactor`
 Starts the refactoring skill. Optional free-text description seeds the SETUP state (e.g., `/refactor split Order into Order + TaxCalculator`).
 
+#### `/selrahcd-dot-claude:prepare-for-ai`
+Audits a codebase for AI-readability smells (hidden domain, compound conditions, conditional maze, switch-as-table, generic naming, primitive obsession, tech-layer organization, god files, inconsistent patterns) and applies fixes one refactor at a time:
+- Three scan modes: hotspots × smells, severity only, or user-directed path
+- Read-only subagent (`prepare-for-ai-scanner`) returns a structured report in chat
+- AST-first detection (eslint, ruff, pmd, ast-grep, semgrep…), LM fallback for semantic smells
+- Apply phase delegates to the `refactoring` skill — one Fowler refactoring per commit, with a user gate between findings
+- Tech-layer organization findings are report-only (slice extraction is a human-led decision)
+
 ### Agents
 
 #### `commit-assistant`
 Automated git commit helper that analyzes staged changes and generates meaningful commit messages following conventional commit standards. Invoked automatically after completing code changes or when the user requests a commit.
+
+#### `prepare-for-ai-scanner`
+Read-only code scanner used by `/prepare-for-ai`. Walks the configured scope, runs AST tooling where available (eslint, ruff, pmd, ast-grep, semgrep, radon…), falls back to LM judgement for semantic smells, and returns a numbered report in chat.
 
 ### Skills
 
@@ -56,6 +67,9 @@ Drive a refactor as a sequence of small, named refactorings from Martin Fowler's
 - Strict state-machine workflow modeled on `tdd-process`
 - Hybrid planning: plan upfront, evolve between steps
 - Invoke via `/refactor` or natural language ("refactor this", "extract method", "rename X")
+
+#### `prepare-for-ai`
+Catalog of nine code smells that hurt human and AI-agent comprehension, with detection recipes (AST-first, LM-fallback) and refactor pointers into the `refactoring` skill. Loaded on demand by the `prepare-for-ai-scanner` agent. Distilled from Adam Tornhill's *Code for Humans and Machines* series.
 
 ## Installation
 
@@ -96,3 +110,4 @@ Drive a refactor as a sequence of small, named refactorings from Martin Fowler's
 - Using Git Worktrees skill: [Jesse Vincent](https://github.com/obra/superpowers/)
 - Brainstorming skill: [Jesse Vincent](https://github.com/obra/superpowers/)
 - Refactoring skill: [Martin Fowler — *Refactoring* (2nd ed.)](https://martinfowler.com/books/refactoring.html)
+- Prepare-for-AI skill and command: [Adam Tornhill — *Code for Humans and Machines*](https://adamtornhill.substack.com)
