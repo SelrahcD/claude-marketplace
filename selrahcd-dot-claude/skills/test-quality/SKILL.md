@@ -130,14 +130,20 @@ For each violation found by agents, present them **one at a time** to the user, 
 
 3. If approved, apply the fix using Edit tool
 
-4. Move to the next improvement
+4. **Commit the fix immediately** before moving on:
+   - Stage only the file(s) modified by this fix (`git add <path>`)
+   - Create a commit with a message describing the single improvement (e.g., `test(<file>): extract magic value into named constant`)
+   - One commit per applied improvement — never batch multiple fixes into one commit
+   - If the commit fails (e.g., pre-commit hook), surface the error to the user and resolve before continuing
 
-**Important:** Do NOT present all improvements at once. Walk through them one by one, getting user approval for each before proceeding to the next.
+5. Move to the next improvement
+
+**Important:** Do NOT present all improvements at once. Walk through them one by one, getting user approval for each before proceeding to the next. Each approved fix gets its own commit before the next improvement is presented.
 
 ### Step 5: Summary
 
 After all improvements have been reviewed, provide a summary of:
-- How many improvements were applied
+- How many improvements were applied (one commit each)
 - How many were skipped
 - Remaining issues (if any)
 
