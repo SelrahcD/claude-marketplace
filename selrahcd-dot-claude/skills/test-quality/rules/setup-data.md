@@ -91,6 +91,46 @@ test('cart total equals product price', () => {
 });
 ```
 
+### Common antifix: don't just match identifiers
+
+When you spot a magic value in an assertion, the temptation is to make the
+assertion use the same identifier as the arrange phase. **If that
+identifier is an imported constant, the value is still hidden** — the
+reader has to leave the test to see it.
+
+```typescript
+// Setup imports a constant
+import { COLLABORATOR_ID_VO } from '../test-helpers'
+
+test('saves with collaborator id', () => {
+  mock.load.mockResolvedValue(
+    anEmployeeForFR({ id: COLLABORATOR_ID_VO }),
+  )
+  await useCase.handle({ ... })
+
+  // ❌ Bad: literal value, reader can't tie it back to anything in the test
+  expect(saved?.getId()).toBe('f47ac10b-58cc-4372-a567-0e02b2c3d479')
+})
+
+// ❌ Also bad: "matches identifier" but value still hidden in an import
+expect(saved?.getId()).toBe(COLLABORATOR_ID_VO)
+
+// ✅ Good: literal value declared locally in the test
+test('saves with collaborator id', () => {
+  const collaboratorId = CollaboratorId.parse(
+    'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+  )
+  mock.load.mockResolvedValue(anEmployeeForFR({ id: collaboratorId }))
+  await useCase.handle({ ... })
+
+  expect(saved?.getId()).toBe(collaboratorId)
+})
+```
+
+Rule of thumb: when the asserted value comes from an imported constant,
+declare a local const in the test (or inline the literal) so the reader
+sees the value without leaving the test.
+
 ## Randomize Irrelevant Data
 
 Data that doesn't affect the assertion should be randomized. This:
@@ -210,6 +250,7 @@ test('shipped order cannot be cancelled', () => {
 - [ ] No repetitive inline object literals
 - [ ] All asserted values visible in arrange/act phase
 - [ ] No magic numbers or strings in assertions
+- [ ] When an asserted value lives in an imported constant, re-declare it locally in the test (don't just match identifiers on both sides)
 - [ ] Irrelevant data randomized
 - [ ] Factories allow overriding relevant fields
 - [ ] Complex objects use builder pattern
